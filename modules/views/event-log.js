@@ -1,24 +1,30 @@
 /* Event log panel — one chronological ledger merging three sources:
-   rate-derived events (engine/events.js), limit exceedance episodes
-   (data/limits.js), and discrete status-bit transitions. Severity-badged,
-   click-to-seek, with a threshold editor and runtime limits import. */
+   rate-derived events, limit exceedance episodes (aircraft dictionary
+   limits when available, placeholder otherwise), and discrete status-bit
+   transitions labelled with their dictionary descriptions + trigger text.
+   WOW ground gating suppresses on-ground noise (toggleable). */
 
 import { detectEvents, detectStatusEvents, combineEvents, DEFAULT_THRESHOLDS, THRESHOLD_LABELS } from '../engine/events.js';
-import { detectLimitEvents, PLACEHOLDER_LIMITS } from '../data/limits.js';
+import { detectLimitEvents, limitsFromDictionary, PLACEHOLDER_LIMITS } from '../data/limits.js';
 
-export function createEventLog(root, model, playback, onEventsChanged) {
+export function createEventLog(root, model, playback, dict, onEventsChanged) {
   const listEl = root.querySelector('#events-list');
   const badgesEl = root.querySelector('#events-badges');
   const thGrid = root.querySelector('#th-grid');
+  const gateBox = root.querySelector('#gate-ground');
   const thresholds = { ...DEFAULT_THRESHOLDS };
-  let limitsTable = PLACEHOLDER_LIMITS;
-  let limitsLabel = 'PLACEHOLDER';
+
+  const dictLimits = limitsFromDictionary(dict);
+  let limitsTable = dictLimits || PLACEHOLDER_LIMITS;
+  let limitsLabel = dictLimits ? 'AIRCRAFT DICT' : 'PLACEHOLDER';
+  let gateGround = true;
   let events = [];
 
   function run() {
+    const mask = gateGround ? model.groundMask : null;
     events = combineEvents(
-      detectEvents(model, thresholds),
-      detectLimitEvents(limitsTable, model),
+      detectEvents(model, thresholds, mask),
+      detectLimitEvents(limitsTable, model, mask),
       detectStatusEvents(model)
     );
     renderBadges();
@@ -41,8 +47,9 @@ export function createEventLog(root, model, playback, onEventsChanged) {
       listEl.innerHTML = '<div class="evt-empty">No anomalies within thresholds</div>';
       return;
     }
-    listEl.innerHTML = events.map(evt => `
-      <button class="evt-row" data-idx="${evt.index}">
+    const cap = 500; // DOM safety for pathological logs
+    listEl.innerHTML = events.slice(0, cap).map(evt => `
+      <button class="evt-row" data-idx="${evt.index}" title="${(evt.note || evt.detail || '').replace(/"/g, '&quot;')}">
         <span class="sev ${evt.severity}"></span>
         <span class="einfo">
           <span class="elabel">${evt.label}</span>
@@ -50,7 +57,7 @@ export function createEventLog(root, model, playback, onEventsChanged) {
         </span>
         <span class="etime">${evt.time}</span>
       </button>
-    `).join('');
+    `).join('') + (events.length > cap ? `<div class="evt-empty">+${events.length - cap} more — see report</div>` : '');
     listEl.querySelectorAll('.evt-row').forEach(row => {
       row.addEventListener('click', () => {
         playback.pause();
@@ -60,7 +67,7 @@ export function createEventLog(root, model, playback, onEventsChanged) {
   }
 
   function detailLine(evt) {
-    if (evt.source === 'status') return 'recorder status bit';
+    if (evt.source === 'status') return evt.detail || 'recorder status bit';
     let s = `${evt.value} ${evt.unit} · limit ${evt.threshold}`;
     if (evt.durationSec) s += ` · ${evt.durationSec}s`;
     return s;
@@ -78,6 +85,15 @@ export function createEventLog(root, model, playback, onEventsChanged) {
       run();
     });
   });
+
+  if (gateBox) {
+    gateBox.checked = true;
+    gateBox.disabled = !model.groundMask;
+    gateBox.title = model.groundMask
+      ? 'Suppress events while weight-on-wheels (GP9 WOW bits)'
+      : 'No WOW bits in this flight — gate unavailable';
+    gateBox.addEventListener('change', () => { gateGround = gateBox.checked; run(); });
+  }
 
   run();
   return {

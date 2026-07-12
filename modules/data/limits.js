@@ -25,6 +25,30 @@ const num = (v) => {
   return isNaN(n) ? null : n;
 };
 
+/** Build the limits table from the aircraft dictionary (config/
+ *  fdr-dictionary.json — extracted from the client's limits workbook).
+ *  Dictionary limits are hard extreme limits → critical severity; the
+ *  original AEO/OEI conditional text is preserved as `note`. */
+export function limitsFromDictionary(dict) {
+  if (!dict || !dict.groups) return null;
+  const out = [];
+  for (const [gid, g] of Object.entries(dict.groups)) {
+    for (const [key, p] of Object.entries(g.params)) {
+      if (p.min === undefined && p.max === undefined) continue;
+      if (p.min === null && p.max === null) continue;
+      if (p.min == null && p.max == null) continue;
+      out.push({
+        param: p.abbr, key, group: gid,
+        unit: p.unit || '',
+        min: p.min ?? null, max: p.max ?? null,
+        cautionMin: null, cautionMax: null,
+        note: p.limitNote || '', description: p.description || ''
+      });
+    }
+  }
+  return out.length ? out : null;
+}
+
 /** Parse a limits workbook (ArrayBuffer) into the limits-table shape. */
 export function parseLimitsWorkbook(arrayBuffer) {
   const wb = XLSX.read(arrayBuffer, { type: 'array' });
@@ -66,12 +90,12 @@ export function parseLimitsWorkbook(arrayBuffer) {
   return limits;
 }
 
-/** Resolve a limits table against a flight model's parameters.
- *  Returns [{ limit, paramDef }] for every limit that matched a parameter. */
+/** Resolve a limits table against a flight model's parameters — exact
+ *  normalized-key match first (v2 tables), name search as fallback. */
 export function matchLimits(limitsTable, model) {
   const out = [];
   for (const limit of limitsTable) {
-    const p = model.findParam(limit.param);
+    const p = (limit.key && model.byKey && model.byKey(limit.key)) || model.findParam(limit.param);
     if (p) out.push({ limit, param: p });
   }
   return out;
@@ -82,7 +106,7 @@ export function matchLimits(limitsTable, model) {
  *  duration — "GS HIGH from 00:41:05, peak 152 kt, 38 s" — which is what an
  *  investigator reads, not one row per sample. Severity within an episode
  *  escalates to the worst band reached. */
-export function detectLimitEvents(limitsTable, model) {
+export function detectLimitEvents(limitsTable, model, groundMask = null) {
   const events = [];
   const matched = matchLimits(limitsTable, model);
   const { timeSeconds, timeLabels } = model;
@@ -103,8 +127,10 @@ export function detectLimitEvents(limitsTable, model) {
       const durSec = Math.max(0, timeSeconds[endI] - timeSeconds[ep.startI]);
       events.push({
         index: ep.startI, timeSec: timeSeconds[ep.startI], time: timeLabels[ep.startI],
-        type: 'LIMIT_' + param.colIndex + '_' + ep.side, source: 'limit',
-        label: `${param.name} ${ep.side}`,
+        type: 'LIMIT_' + (param.id || param.key || param.name) + '_' + ep.side, source: 'limit',
+        label: `${param.abbr || param.name} ${ep.side}`,
+        detail: limit.description || param.desc || '',
+        note: limit.note || '',
         severity: ep.severity,
         color: ep.severity === 'critical' ? '#ff4d63' : '#ffc24b',
         value: ep.peak.toFixed(1), unit: param.unit, threshold: ep.bound,
@@ -116,6 +142,7 @@ export function detectLimitEvents(limitsTable, model) {
     for (let i = 0; i < data.length; i++) {
       const v = data[i];
       if (v === null) continue;
+      if (groundMask && groundMask[i]) { if (ep) close(i); continue; }
       const hit = classify(limit, v);
 
       if (hit && ep && hit.side === ep.side) {

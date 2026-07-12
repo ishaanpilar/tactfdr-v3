@@ -8,14 +8,15 @@
    - event placemarks (critical + warning) pinned at their track position
      with value/limit/time details
 
-   Times: FDR exports carry relative HH:MM:SS only. KML needs absolute
-   ISO timestamps, so the track is anchored to an arbitrary epoch date —
-   relative timing between points (what the replay shows) is exact. */
+   Times: real exports carry absolute GMT date columns (parser v2), so the
+   track uses true timestamps; legacy/demo data without dates anchors to an
+   arbitrary epoch — relative timing (what the replay shows) is exact
+   either way. */
 
-const EPOCH = Date.UTC(2023, 0, 1); // anchor date, arbitrary but stable
+const FALLBACK_EPOCH = Date.UTC(2023, 0, 1);
 
 const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const iso = (sec) => new Date(EPOCH + sec * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z');
+const isoFrom = (epochMs) => (sec) => new Date(epochMs + sec * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z');
 
 /* KML colors are aabbggrr */
 const KML_STYLES = `
@@ -34,6 +35,7 @@ const MAX_EVENT_PINS = 100;
 export function buildKML(model, events = []) {
   if (!model.hasTrack) throw new Error('No GPS track in this flight — nothing to export.');
   const t0 = model.timeSeconds[0] || 0;
+  const iso = isoFrom(model.absStartMs || FALLBACK_EPOCH);
 
   // decimate very dense tracks: GE handles ~10k track points comfortably
   const step = Math.max(1, Math.ceil(model.n / 10000));
@@ -76,7 +78,7 @@ export function buildKML(model, events = []) {
   <name>TACT-FDR — ${esc(model.metadata.filename)}</name>
   <description><![CDATA[Flight replay exported by TACT-FDR v3.<br>
 Duration ${esc(model.metadata.duration)} · ${model.metadata.records.toLocaleString()} records · ${events.length} detected events.<br>
-Timestamps are relative to an arbitrary epoch (FDR exports carry no absolute date) — use the time slider for replay.]]></description>
+${model.absStartMs ? 'Timestamps are true GMT from the recorder.' : 'Timestamps anchored to an arbitrary epoch (no date columns in source) — relative replay timing is exact.'} Use the time slider for replay.]]></description>
 ${KML_STYLES}
   <Placemark>
     <name>Flight Replay (time slider)</name>

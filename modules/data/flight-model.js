@@ -1,22 +1,16 @@
-/* Flight model — the single source of truth for a loaded flight.
-   Wraps parsed data with derived quantities (heading, rates) and
-   assigns ACCS trace colors. Every view reads from this object. */
+/* Flight model v2 — single source of truth for a loaded flight.
+   Consumes the v2 parser output (group-keyed parameters, dictionary
+   descriptions, discrete status bits) and derives heading, rates, the
+   GPS track helpers, and the WOW ground mask used to gate event
+   detection while on the ground. */
 
 import { formatHMS } from './excel-parser.js';
 
-/* ACCS-derived trace palette: semantic hues first, then cool neutrals.
-   Deliberately small and ordered — not the 20-color rainbow of v1. */
+/* ACCS-derived trace palette: semantic hues first, then cool neutrals. */
 const TRACE_COLORS = [
-  '#38d6ff', // intel cyan
-  '#46e08a', // nominal green
-  '#ffc24b', // caution amber
-  '#2f6fd6', // plan blue
-  '#ff8a3d', // warn orange
-  '#9fb3c6', // txt-2 neutral
-  '#b48ce8', // violet (derived, cool family)
-  '#5ee8d0', // teal (derived)
-  '#ff4d63', // critical red (last resort)
-  '#7a94ad'  // dim neutral
+  '#38d6ff', '#46e08a', '#ffc24b', '#2f6fd6', '#ff8a3d',
+  '#9fb3c6', '#b48ce8', '#5ee8d0', '#ff4d63', '#7a94ad',
+  '#8fd14f', '#e8a4c8', '#6fb3e0', '#d9c56b', '#88a0b8'
 ];
 
 function greatCircleBearing(lat1, lon1, lat2, lon2) {
@@ -28,7 +22,6 @@ function greatCircleBearing(lat1, lon1, lat2, lon2) {
   return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
 }
 
-/** d(value)/dt per second between adjacent samples; null-safe. */
 export function computeRate(data, timeSeconds) {
   if (!data || data.length < 2) return null;
   const rate = [null];
@@ -41,9 +34,8 @@ export function computeRate(data, timeSeconds) {
   return rate;
 }
 
-/* Light smoothing (radius 2) for rate inputs — 1 Hz GPS altitude/bearing
-   jitter otherwise turns into ±several-m/s and ±tens-of-deg/s spikes that
-   flood the event log with phantom exceedances. */
+/* Light smoothing (radius 2) for rate inputs — 1 Hz sensor jitter otherwise
+   floods the event log with phantom exceedances. */
 function lightSmooth(data) {
   if (!data) return null;
   const R = 2, out = new Array(data.length);
@@ -60,8 +52,7 @@ function lightSmooth(data) {
   return out;
 }
 
-/* Unwrap compass headings into a continuous series so the 359°→1° crossing
-   differentiates to +2°/s, not −358°/s. */
+/* Unwrap compass headings so 359°→1° differentiates to +2°/s, not −358°/s. */
 function unwrapHeading(heading) {
   if (!heading) return null;
   const out = new Array(heading.length);
@@ -79,20 +70,34 @@ function unwrapHeading(heading) {
 }
 
 export function buildModel(parsed) {
-  const { metadata, timeSeconds, timeLabels, parameters, track, statusBits = [] } = parsed;
+  const { metadata, timeSeconds, timeLabels, parameters, track, statusBits = [], absStartMs = null } = parsed;
 
-  // color + visibility assignment (first 3 params visible by default, like v1)
   const paramList = Object.values(parameters);
+  paramList.sort((a, b) => a.group.localeCompare(b.group, undefined, { numeric: true }) || a.abbr.localeCompare(b.abbr));
   paramList.forEach((p, i) => {
     p.color = TRACE_COLORS[i % TRACE_COLORS.length];
-    p.visible = i < 3;
+    p.visible = false;
+    p.name = p.abbr; // display name; description available as p.desc
   });
 
   const hasTrack = track.some(t => t !== null);
 
-  // derived heading from track (great-circle bearing between consecutive fixes)
-  let heading = null;
-  if (hasTrack) {
+  /* finders: match key exactly, then abbr/description substring */
+  const byKey = (key) => paramList.find(p => p.key === key) || null;
+  const findParam = (needle) => {
+    const lower = String(needle).toLowerCase();
+    return byKey(lower.replace(/[^a-z0-9#]/g, '')) ||
+      paramList.find(p => p.abbr.toLowerCase().includes(lower)) ||
+      paramList.find(p => p.desc.toLowerCase().includes(lower)) || null;
+  };
+
+  // core series: recorded values preferred, GPS-derived as fallback
+  const altParam = byKey('radalt') || byKey('zpadc1') || findParam('altitude');
+  const spdParam = byKey('gdspd') || findParam('ground speed');
+  const hdgParam = byKey('hdg#1') || byKey('hdg1') || findParam('heading');
+
+  let heading = hdgParam ? hdgParam.data.slice() : null;
+  if (!heading && hasTrack) {
     heading = new Array(timeSeconds.length).fill(null);
     let prev = null, prevHdg = null;
     for (let i = 0; i < track.length; i++) {
@@ -106,26 +111,35 @@ export function buildModel(parsed) {
     }
   }
 
-  const findParam = (needle) => {
-    const lower = needle.toLowerCase();
-    for (const p of paramList) if (p.name.toLowerCase().includes(lower)) return p;
-    return null;
-  };
+  // default chart selection: the classic quick-look set, else first 3
+  const defaults = ['nmr', 't451', 'q1', 'radalt', 'gdspd'];
+  let shown = 0;
+  for (const k of defaults) { const p = byKey(k); if (p) { p.visible = true; shown++; } }
+  if (!shown) paramList.slice(0, 3).forEach(p => p.visible = true);
 
-  const altParam = findParam('altitude') || findParam('alt');
-  const spdParam = findParam('ground speed') || findParam('speed');
-  const hdgSource = unwrapHeading(heading || (findParam('sel course') || findParam('desired track') || {}).data || null);
+  /* WOW (weight-on-wheels, GP9) — the proper ground/flight gate.
+     groundMask[i] === true means firmly on the ground. */
+  const wowBits = statusBits.filter(b => /^wow(lh|rh)$/.test(b.key));
+  let groundMask = null;
+  if (wowBits.length) {
+    groundMask = new Array(timeSeconds.length).fill(false);
+    for (let i = 0; i < timeSeconds.length; i++) {
+      groundMask[i] = wowBits.some(b => b.data[i] === 1);
+    }
+  }
 
   const model = {
-    metadata, timeSeconds, timeLabels, parameters, track, hasTrack, statusBits,
+    metadata, timeSeconds, timeLabels, parameters, track, hasTrack, statusBits, absStartMs,
     n: timeSeconds.length,
+    paramList,
     heading,
+    groundMask,
     altData: altParam ? altParam.data : null,
+    altUnit: altParam ? altParam.unit : 'm',
     spdData: spdParam ? spdParam.data : null,
     altRate: altParam ? computeRate(lightSmooth(altParam.data), timeSeconds) : null,
-    hdgRate: hdgSource ? computeRate(lightSmooth(hdgSource), timeSeconds) : null,
-    findParam,
-    /* average samples per second — drives real-time playback pacing */
+    hdgRate: heading ? computeRate(lightSmooth(unwrapHeading(heading)), timeSeconds) : null,
+    findParam, byKey,
     samplesPerSec: timeSeconds.length > 1
       ? (timeSeconds.length - 1) / Math.max(1, timeSeconds[timeSeconds.length - 1] - timeSeconds[0])
       : 1,

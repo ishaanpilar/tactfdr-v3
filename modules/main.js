@@ -3,7 +3,7 @@
    timeline, keyboard shortcuts. All flight state lives in the model;
    all timing lives in the single playback clock. */
 
-import { parseWorkbook, fromTrackArray } from './data/excel-parser.js';
+import { parseWorkbooks, fromTrackArray } from './data/excel-parser.js';
 import { buildModel } from './data/flight-model.js';
 import { parseLimitsWorkbook } from './data/limits.js';
 import { createPlayback } from './engine/playback.js';
@@ -21,6 +21,14 @@ const $ = (sel) => document.querySelector(sel);
 let model = null, playback = null, chart = null, mapView = null, eventLog = null, report = null, cvr = null;
 let currentEvents = [];
 
+/* aircraft dictionary (parameter descriptions, limits, warning triggers) —
+   extracted from the client reference workbooks by tools/extract_dictionaries.py */
+let DICT = null;
+const dictReady = fetch('config/fdr-dictionary.json')
+  .then(r => r.ok ? r.json() : null)
+  .then(d => { DICT = d; })
+  .catch(() => { console.warn('fdr-dictionary.json not found — running with generic labels + placeholder limits'); });
+
 /* ---------------- upload flow ---------------- */
 const overlay = $('#upload-overlay');
 const dropZone = $('#drop-zone');
@@ -35,26 +43,30 @@ dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.clas
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', (e) => {
   e.preventDefault(); dropZone.classList.remove('dragover');
-  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  if (e.dataTransfer.files.length) handleFiles([...e.dataTransfer.files]);
 });
-fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
+fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFiles([...fileInput.files]); });
 
-function handleFile(file) {
-  if (!/\.xlsx?$/i.test(file.name)) { setStatus('ERROR: only .xlsx / .xls accepted', 'err'); return; }
-  setStatus('PROCESSING ' + file.name + ' …', 'busy');
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const parsed = parseWorkbook(e.target.result, file.name);
-      if (parsed.timeSeconds.length < 2) { setStatus('ERROR: no time-coded data rows found', 'err'); return; }
-      setStatus('OK — ' + parsed.metadata.records + ' records', 'ok');
-      setTimeout(() => loadFlight(parsed), 400);
-    } catch (err) {
-      setStatus('ERROR: ' + err.message, 'err');
-      console.error(err);
-    }
-  };
-  reader.readAsArrayBuffer(file);
+/* Multi-file: a flight often ships as gp1.xlsx + gp2.xlsx + … — select or
+   drop them together and they merge onto one timeline (absolute GMT). */
+async function handleFiles(files) {
+  files = files.filter(f => /\.xlsx?$/i.test(f.name));
+  if (!files.length) { setStatus('ERROR: only .xlsx / .xls accepted', 'err'); return; }
+  setStatus('PROCESSING ' + files.map(f => f.name).join(', ') + ' …', 'busy');
+  try {
+    await dictReady;
+    const entries = [];
+    for (const f of files) entries.push({ buffer: await f.arrayBuffer(), name: f.name });
+    const parsed = parseWorkbooks(entries, DICT);
+    if (parsed.timeSeconds.length < 2) { setStatus('ERROR: no time-coded data rows found', 'err'); return; }
+    const skipped = parsed.metadata.skippedSheets || [];
+    setStatus(`OK — ${parsed.metadata.records.toLocaleString()} records · groups ${parsed.metadata.groups.join(', ')}` +
+      (skipped.length ? ` · ${skipped.length} sheet(s) skipped` : ''), 'ok');
+    setTimeout(() => loadFlight(parsed), 400);
+  } catch (err) {
+    setStatus('ERROR: ' + err.message, 'err');
+    console.error(err);
+  }
 }
 
 $('#btn-demo').addEventListener('click', () => {
@@ -92,12 +104,15 @@ function loadFlight(parsed) {
     () => eventLog ? eventLog.limitsTable : []);
   mapView = createMapView($('#map-host'), $('#map-hud'), model, playback);
   createInstruments($('#instruments'), model, playback);
-  eventLog = createEventLog($('#events-panel-root'), model, playback, (events) => {
+  eventLog = createEventLog($('#events-panel-root'), model, playback, DICT, (events) => {
     currentEvents = events;
     $('#nav-events-badge').textContent = events.length;
     $('#nav-events-badge').style.display = events.length ? '' : 'none';
     if (chart) chart.refresh();
   });
+  const lbl = $('#limits-label');
+  lbl.textContent = eventLog.limitsLabel;
+  lbl.style.color = eventLog.limitsLabel === 'PLACEHOLDER' ? 'var(--caution)' : 'var(--nominal)';
   report = createReport($('#report-paper'), $('#print-paper'), model, () => currentEvents, $('#chart-host'));
   report.setLimitsSourceLabel(() => eventLog.limitsLabel);
   cvr = createCVR($('#cvr-panel'), model, playback);
@@ -119,17 +134,28 @@ function loadFlight(parsed) {
 /* ---------------- parameter list ---------------- */
 function buildParamList() {
   const listEl = $('#param-list');
-  const params = Object.values(model.parameters);
-  listEl.innerHTML = params.map(p => `
-    <button class="param-row ${p.visible ? 'on' : ''}" data-col="${p.colIndex}">
-      <span class="swatch" style="background:${p.color};color:${p.color}"></span>
-      <span class="pname" title="${p.name}">${p.name}</span>
-      <span class="punit">${p.unit}</span>
-    </button>
-  `).join('');
+  const params = model.paramList;
+  const dictGroups = (DICT && DICT.groups) || {};
+
+  let html = '', lastGroup = null;
+  for (const p of params) {
+    if (p.group !== lastGroup) {
+      const title = (dictGroups[p.group] && dictGroups[p.group].title) || '';
+      html += `<div class="param-group">${p.group.toUpperCase()}${title ? ' · ' + title : ''}</div>`;
+      lastGroup = p.group;
+    }
+    const tip = p.desc ? `${p.abbr} — ${p.desc}` : p.abbr;
+    html += `
+      <button class="param-row ${p.visible ? 'on' : ''}" data-id="${p.id}">
+        <span class="swatch" style="background:${p.color};color:${p.color}"></span>
+        <span class="pname" title="${tip.replace(/"/g, '&quot;')}">${p.abbr}</span>
+        <span class="punit">${p.unit}</span>
+      </button>`;
+  }
+  listEl.innerHTML = html;
   listEl.querySelectorAll('.param-row').forEach(row => {
     row.addEventListener('click', () => {
-      const p = model.parameters[row.dataset.col];
+      const p = model.parameters[row.dataset.id];
       p.visible = !p.visible;
       row.classList.toggle('on', p.visible);
       chart.refresh();
@@ -371,14 +397,34 @@ setInterval(() => { $('#tb-clock').textContent = new Date().toTimeString().slice
    ?demo         auto-load the bundled demo flight
    ?view=map     switch to map replay after load                     */
 const urlParams = new URLSearchParams(location.search);
-if (urlParams.has('demo') && typeof FLIGHT_DATA !== 'undefined' && FLIGHT_DATA.length > 1) {
-  loadFlight(fromTrackArray(FLIGHT_DATA));
+async function bootFromParams() {
+  const load = urlParams.get('load'); // ?load=path1,path2 — fetch + parse workbooks (dev)
+  if (load) {
+    await dictReady;
+    try {
+      const entries = [];
+      for (const url of load.split(',')) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(url + ' → HTTP ' + res.status);
+        entries.push({ buffer: await res.arrayBuffer(), name: decodeURIComponent(url.split('/').pop()) });
+      }
+      loadFlight(parseWorkbooks(entries, DICT));
+    } catch (err) {
+      setStatus('ERROR: ' + err.message, 'err');
+      console.error(err);
+      return;
+    }
+  } else if (urlParams.has('demo') && typeof FLIGHT_DATA !== 'undefined' && FLIGHT_DATA.length > 1) {
+    await dictReady;
+    loadFlight(fromTrackArray(FLIGHT_DATA));
+    if (cvr) cvr.loadDemo(); // synthetic CVR sample — no-op if assets missing
+  } else return;
+
   const v = urlParams.get('view');
   if (v === 'map' || v === 'report') setView(v);
-  if (cvr) cvr.loadDemo(); // synthetic CVR sample — no-op if assets missing
-  // ?pmtiles=<path-or-url> loads an offline basemap (dev/demo convenience)
   const pm = urlParams.get('pmtiles');
   if (pm && mapView && mapView.available) {
     applyOfflineBasemap(pm, pm.split('/').pop().replace(/\.pmtiles$/, ''));
   }
 }
+bootFromParams();

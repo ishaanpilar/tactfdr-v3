@@ -35,23 +35,34 @@ const EVENT_TYPES = {
 /* Discrete status/warning bits (parsed as 0/1 columns): every rising edge
    is a fault/warning activation, every falling edge a clearance. These are
    exact recorder flags, so no dedup/smoothing applies. */
+/* Group semantics: gp9/gp16 are WARNINGS, gp6/gp10/gp11 are AFCS FAILURE
+   flags — a rising edge is a fault (warning severity). gp12/gp14/gp15 are
+   AFCS mode ENGAGEMENT bits — pilot actions, logged as info (caution) so
+   mode history is available without flooding the warning counts. */
+const ENGAGEMENT_GROUPS = new Set(['gp12', 'gp14', 'gp15']);
+
 export function detectStatusEvents(model) {
   const events = [];
   const { timeSeconds, timeLabels } = model;
   for (const bit of model.statusBits || []) {
+    if (/^wow(lh|rh)$/.test(bit.key || '')) continue; // ground/flight switch, not a fault
+    const engagement = ENGAGEMENT_GROUPS.has(bit.group);
     let prev = null;
     for (let i = 0; i < bit.data.length; i++) {
       const v = bit.data[i];
       if (v === null) continue;
       if (prev !== null && v !== prev) {
         const rising = v === 1;
+        const warn = rising && !engagement;
         events.push({
           index: i, timeSec: timeSeconds[i], time: timeLabels[i],
-          type: 'BIT_' + bit.colIndex, source: 'status',
-          label: `${bit.name} ${rising ? 'ACTIVE' : 'CLEARED'}`,
-          severity: rising ? 'warning' : 'caution',
-          color: rising ? '#ffc24b' : '#38d6ff',
-          value: rising ? '1' : '0', unit: 'bit', threshold: '—'
+          type: 'BIT_' + (bit.id || bit.key), source: 'status',
+          label: `${bit.abbr || bit.name} ${rising ? (engagement ? 'ENGAGED' : 'ACTIVE') : (engagement ? 'DISENGAGED' : 'CLEARED')}`,
+          detail: bit.desc || '',
+          note: bit.trigger || '',
+          severity: warn ? 'warning' : 'caution',
+          color: warn ? '#ffc24b' : '#38d6ff',
+          value: rising ? 'ON' : 'OFF', unit: '', threshold: '—'
         });
       }
       prev = v;
@@ -67,7 +78,7 @@ export function combineEvents(...eventLists) {
   return eventLists.flat().sort((a, b) => a.timeSec - b.timeSec);
 }
 
-export function detectEvents(model, th = DEFAULT_THRESHOLDS) {
+export function detectEvents(model, th = DEFAULT_THRESHOLDS, groundMask = null) {
   const events = [];
   const { altData, spdData, altRate, hdgRate, timeSeconds, timeLabels } = model;
 
@@ -80,6 +91,7 @@ export function detectEvents(model, th = DEFAULT_THRESHOLDS) {
   };
 
   for (let i = 1; i < timeSeconds.length; i++) {
+    if (groundMask && groundMask[i]) continue; // on the ground — not flight anomalies
     if (spdData && spdData[i] !== null && spdData[i] > th.overspeed)
       add(i, 'OVERSPEED', spdData[i], 'kt', th.overspeed);
 

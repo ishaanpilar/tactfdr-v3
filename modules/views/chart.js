@@ -90,7 +90,9 @@ export function createChartView(host, model, playback, getEvents, getLimits) {
     if (yMode !== 'normalized' && getLimits) {
       const table = getLimits() || [];
       for (const p of activeParams()) {
-        const lim = table.find(l => p.name.toLowerCase().includes(l.param.toLowerCase()));
+        const lim = table.find(l =>
+          (l.key && p.key === l.key) ||
+          (p.name || '').toLowerCase().includes(String(l.param).toLowerCase()));
         if (!lim) continue;
         const line = (y, color, dash) => shapes.push({
           type: 'line', x0: xRange[0], x1: xRange[1], y0: y, y1: y,

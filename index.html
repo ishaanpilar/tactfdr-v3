@@ -21,9 +21,9 @@
       </div>
       <div class="p-body">
         <div id="drop-zone">
-          <div class="dz-title">Drop flight recorder file</div>
-          <div class="dz-sub">drag &amp; drop or <span class="link" id="browse-link">browse files</span> — parsed locally, nothing leaves this machine</div>
-          <input type="file" id="file-input" accept=".xlsx,.xls" hidden>
+          <div class="dz-title">Drop flight recorder file(s)</div>
+          <div class="dz-sub">drop group exports together (gp1 + gp2 + …) to merge one flight<br>or <span class="link" id="browse-link">browse files</span> — parsed locally, nothing leaves this machine</div>
+          <input type="file" id="file-input" accept=".xlsx,.xls" multiple hidden>
         </div>
         <div id="upload-status"></div>
         <div class="upload-sep">or</div>
@@ -310,7 +310,11 @@
           </div>
           <div class="p-body" style="padding-top:4px" id="events-panel">
             <div id="events-list" class="scroll-thin"></div>
-            <details style="flex:0 0 auto;margin-top:8px">
+            <label class="gate-row" style="flex:0 0 auto">
+              <input type="checkbox" id="gate-ground" checked>
+              <span>Suppress ground (WOW) events</span>
+            </label>
+            <details style="flex:0 0 auto;margin-top:6px">
               <summary style="font-family:var(--cond);font-size:10px;letter-spacing:1.4px;color:var(--txt-3);text-transform:uppercase;cursor:pointer;font-weight:600">Detection Thresholds</summary>
               <div class="th-grid" id="th-grid" style="margin-top:8px"></div>
             </details>

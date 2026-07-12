@@ -28,6 +28,16 @@
 
 /* ---------- parameter list ---------- */
 #param-list{flex:1;min-height:0;overflow-y:auto}
+.param-group{
+  font-family:var(--cond);font-size:var(--fs-2xs);letter-spacing:var(--ls-2);
+  color:var(--intel);text-transform:uppercase;font-weight:600;
+  padding:8px 4px 3px;border-bottom:1px solid var(--line-2);
+  position:sticky;top:0;background:linear-gradient(180deg,var(--panel-2),var(--panel));z-index:1;
+}
+.gate-row{display:flex;align-items:center;gap:7px;padding-top:8px;border-top:1px solid var(--line-2);margin-top:6px;cursor:pointer}
+.gate-row span{font-family:var(--cond);font-size:10px;letter-spacing:var(--ls-1);color:var(--txt-3);text-transform:uppercase;font-weight:600}
+.gate-row input{accent-color:var(--intel);cursor:pointer}
+.gate-row input:disabled + span{opacity:.4}
 .param-row{display:flex;align-items:center;gap:9px;width:100%;padding:7px 6px;border:none;background:none;border-bottom:1px solid var(--line-2);cursor:pointer;text-align:left;transition:var(--t-fast);border-radius:var(--r-sm)}
 .param-row:last-child{border-bottom:none}
 .param-row:hover{background:var(--intel-06)}
