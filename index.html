@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TACT-FDR // Flight Data Analysis Suite</title>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="styles/fonts.css">
+  <link rel="stylesheet" href="styles/tokens.css">
+  <link rel="stylesheet" href="styles/components.css">
+  <link rel="stylesheet" href="styles/app.css">
+</head>
+<body>
+
+  <!-- upload overlay -->
+  <div id="upload-overlay">
+    <div class="panel upload-panel">
+      <div class="p-head">
+        <span class="p-title">FDR Data Import</span>
+        <span class="p-tag">XLSX / XLS</span>
+      </div>
+      <div class="p-body">
+        <div id="drop-zone">
+          <div class="dz-title">Drop flight recorder file</div>
+          <div class="dz-sub">drag &amp; drop or <span class="link" id="browse-link">browse files</span> — parsed locally, nothing leaves this machine</div>
+          <input type="file" id="file-input" accept=".xlsx,.xls" hidden>
+        </div>
+        <div id="upload-status"></div>
+        <div class="upload-sep">or</div>
+        <button class="btn cyan" id="btn-demo">Load Demo Flight</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app" data-view="chart">
+
+    <!-- top bar -->
+    <header class="topbar">
+      <div class="tb-seg tb-brand">
+        <div>
+          <div class="tb-wordmark">TACT<span class="accent">FDR</span></div>
+          <div class="tb-sub">Flight Data Analysis Suite</div>
+        </div>
+      </div>
+      <div class="tb-seg">
+        <div class="tb-col"><span class="tb-label">File</span><span class="tb-val mono" id="tb-file" style="font-size:12px">—</span></div>
+      </div>
+      <div class="tb-seg">
+        <div class="tb-col"><span class="tb-label">Date</span><span class="tb-val" id="tb-date">—</span></div>
+      </div>
+      <div class="tb-seg">
+        <div class="tb-col"><span class="tb-label">Duration</span><span class="tb-val mono" id="tb-duration">--:--:--</span></div>
+      </div>
+      <div class="tb-seg">
+        <div class="tb-col"><span class="tb-label">Records</span><span class="tb-val mono" id="tb-records">0</span></div>
+      </div>
+      <div class="bb-spacer"></div>
+      <div class="tb-seg">
+        <span class="dot g"></span>
+        <div class="tb-col"><span class="tb-label">System</span><span class="tb-val" style="color:var(--nominal)">OFFLINE-READY</span></div>
+      </div>
+      <div class="tb-seg">
+        <div class="tb-col"><span class="tb-label">Local Time</span><span class="tb-val mono" id="tb-clock">--:--:--</span></div>
+      </div>
+    </header>
+
+    <!-- nav -->
+    <nav class="navbar">
+      <button class="nav-item active" id="nav-chart">Analysis</button>
+      <button class="nav-item" id="nav-map">Map Replay</button>
+      <button class="nav-item" id="nav-report">Report</button>
+      <span class="badge" id="nav-events-badge" style="display:none">0</span>
+      <div class="nav-spacer"></div>
+      <button class="btn cyan inline" id="btn-upload-new" style="height:32px;font-size:11px">Load New File</button>
+    </nav>
+
+    <!-- workspace -->
+    <main class="workspace">
+
+      <!-- left rail: parameters + display controls -->
+      <div class="ws-left">
+        <section class="panel" style="flex:1;min-height:0">
+          <div class="p-head"><span class="p-title">Parameters</span><span class="p-tag">Y-AXIS</span></div>
+          <div class="p-body" style="padding-top:5px">
+            <div id="param-list" class="scroll-thin"></div>
+            <div class="param-actions">
+              <button class="btn" id="btn-params-all">All</button>
+              <button class="btn" id="btn-params-none">None</button>
+            </div>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="p-head"><span class="p-title">Display</span></div>
+          <div class="p-body" style="padding-top:4px">
+            <div class="ctl-row">
+              <label for="ctl-window">X Interval</label>
+              <select class="ctl" id="ctl-window">
+                <option value="0" selected>Full flight</option>
+                <option value="60">1 min</option>
+                <option value="180">3 min</option>
+                <option value="300">5 min</option>
+                <option value="600">10 min</option>
+                <option value="1800">30 min</option>
+              </select>
+            </div>
+            <div class="ctl-row">
+              <label for="ctl-ymode">Y Scale</label>
+              <select class="ctl" id="ctl-ymode">
+                <option value="auto" selected>Auto</option>
+                <option value="normalized">Normalized</option>
+                <option value="manual">Manual</option>
+              </select>
+            </div>
+            <div class="ctl-row" id="manual-y" style="display:none">
+              <input class="ctl-num" id="y-min" type="number" value="0" aria-label="Y min">
+              <input class="ctl-num" id="y-max" type="number" value="100" aria-label="Y max">
+            </div>
+            <div class="ctl-row">
+              <label for="ctl-chartmode">Trace</label>
+              <select class="ctl" id="ctl-chartmode">
+                <option value="lines" selected>Lines</option>
+                <option value="markers">Markers</option>
+                <option value="lines+markers">Both</option>
+              </select>
+            </div>
+            <div class="ctl-row">
+              <label>Limits</label>
+              <span class="mono" id="limits-label" style="font-size:9.5px;color:var(--caution)">PLACEHOLDER</span>
+            </div>
+            <div class="ctl-row" style="border-bottom:none;padding-top:9px;gap:6px">
+              <button class="btn" id="btn-export" style="height:30px;font-size:10.5px">Export PNG</button>
+              <button class="btn" id="btn-import-limits" style="height:30px;font-size:10.5px" title="Import aircraft limits Excel">Limits…</button>
+              <input type="file" id="limits-input" accept=".xlsx,.xls" hidden>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- center: chart / map + timeline -->
+      <div class="ws-center">
+        <div class="view active" id="view-chart">
+          <section class="panel">
+            <div class="p-head"><span class="p-title">Parameter Traces</span><span class="p-tag g">LIVE</span></div>
+            <div class="p-body" style="padding:6px">
+              <div id="chart-host"></div>
+            </div>
+          </section>
+        </div>
+        <div class="view" id="view-map">
+          <section class="panel">
+            <div class="p-head"><span class="p-title">Flight Path Replay</span><span class="p-tag">ONLINE TILES</span></div>
+            <div class="p-body" style="padding:6px">
+              <div id="map-host">
+                <div class="map-hud tl" id="map-hud">
+                  <div class="hud-card">
+                    POS <span class="hv" id="hud-pos">—</span><br>
+                    ALT <span class="hv am" id="hud-alt">0</span> m &nbsp; GS <span class="hv" id="hud-spd">0</span> kt &nbsp; HDG <span class="hv" id="hud-hdg">---</span>°
+                  </div>
+                </div>
+                <div id="map-legend"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="view" id="view-report">
+          <section class="panel">
+            <div class="p-head">
+              <span class="p-title">Flight Data Report</span>
+              <button class="btn cyan inline" id="btn-print-report" style="height:28px;font-size:10.5px">Print / Save PDF</button>
+            </div>
+            <div class="p-body" style="padding:0">
+              <div id="report-scroll" class="scroll-thin">
+                <div class="report-doc" id="report-paper"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- timeline + transport -->
+        <section class="panel" id="timeline-panel" style="flex:0 0 auto">
+          <div class="p-body" style="padding:9px 12px">
+            <div id="profile-wrap">
+              <canvas id="alt-profile"></canvas>
+              <div id="profile-cursor"></div>
+            </div>
+            <div class="transport">
+              <button class="t-btn" id="btn-start" title="Jump to start (Home)">
+                <svg viewBox="0 0 16 16"><path d="M2 2h2v12H2zM14 2v12L5 8z"/></svg>
+              </button>
+              <button class="t-btn" id="btn-play" title="Play / Pause (Space)">
+                <svg viewBox="0 0 16 16" id="icon-play"><path d="M4 2l9 6-9 6z"/></svg>
+                <svg viewBox="0 0 16 16" id="icon-pause" style="display:none"><path d="M3 2h4v12H3zM9 2h4v12H9z"/></svg>
+              </button>
+              <button class="t-btn" id="btn-end" title="Jump to end (End)">
+                <svg viewBox="0 0 16 16"><path d="M12 2h2v12h-2zM2 2l9 6-9 6z"/></svg>
+              </button>
+              <div id="scrub"><div id="scrub-fill"></div><div id="scrub-handle"></div></div>
+              <div id="time-display">00:00:00 / 00:00:00</div>
+              <select class="ctl" id="speed-select" title="Playback rate" style="min-width:64px">
+                <option value="1">1×</option>
+                <option value="2">2×</option>
+                <option value="5" selected>5×</option>
+                <option value="10">10×</option>
+                <option value="20">20×</option>
+                <option value="50">50×</option>
+                <option value="100">100×</option>
+              </select>
+              <button class="t-btn engaged" id="btn-follow" title="Camera follow (F)">
+                <svg viewBox="0 0 16 16"><path d="M8 1v3M8 12v3M1 8h3M12 8h3" stroke="currentColor" stroke-width="1.6" fill="none"/><circle cx="8" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+              </button>
+              <button class="t-btn engaged" id="btn-trail" title="Toggle trail">
+                <svg viewBox="0 0 16 16"><path d="M2 13c3-1 3-5 6-6s5-2 6-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.5 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- right rail: instruments + events -->
+      <div class="ws-right">
+        <section class="panel" id="instruments" style="flex:0 0 auto">
+          <div class="p-head"><span class="p-title">Instruments</span><span class="p-tag g">SYNC</span></div>
+          <div class="p-body">
+            <div class="inst-gauges">
+              <div class="gauge">
+                <svg viewBox="0 0 124 124">
+                  <circle cx="62" cy="62" r="54" fill="none" stroke="var(--wash-3)" stroke-width="9"/>
+                  <circle id="alt-arc" cx="62" cy="62" r="54" fill="none" stroke="var(--caution)" stroke-width="9"
+                          stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3"
+                          style="transition:stroke-dashoffset .3s"/>
+                </svg>
+                <div class="gauge-num">
+                  <span class="gn" id="alt-num" style="color:var(--caution)">0</span>
+                  <span class="gu">Alt · m</span>
+                </div>
+              </div>
+            </div>
+            <div class="readouts">
+              <div class="ro-cell alt"><div class="rv" id="ro-alt">0</div><div class="rl">Alt (m)</div></div>
+              <div class="ro-cell spd"><div class="rv" id="ro-spd">0</div><div class="rl">GS (kt)</div></div>
+              <div class="ro-cell hdg"><div class="rv" id="ro-hdg">---</div><div class="rl">Heading</div></div>
+              <div class="ro-cell vsi"><div class="rv" id="ro-time">00:00:00</div><div class="rl">Elapsed</div></div>
+              <div class="ro-cell ro-wide"><div class="rv" id="ro-pos">—</div><div class="rl">Lat / Lon</div></div>
+            </div>
+            <div class="vsi-wrap">
+              <div class="ctl-row" style="border:none;padding:0 0 4px">
+                <label>Vertical Speed</label>
+                <span class="mono" id="vsi-val" style="font-size:13px;color:var(--intel)">0.0</span>
+              </div>
+              <div class="vsi-track"><div id="vsi-needle"></div></div>
+              <div class="vsi-scale"><span>-10</span><span>0</span><span>+10 m/s</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="events-panel-root" style="flex:1;min-height:0">
+          <div class="p-head">
+            <span class="p-title">Event Log</span>
+            <span class="evt-badges" id="events-badges"></span>
+          </div>
+          <div class="p-body" style="padding-top:4px" id="events-panel">
+            <div id="events-list" class="scroll-thin"></div>
+            <details style="flex:0 0 auto;margin-top:8px">
+              <summary style="font-family:var(--cond);font-size:10px;letter-spacing:1.4px;color:var(--txt-3);text-transform:uppercase;cursor:pointer;font-weight:600">Detection Thresholds</summary>
+              <div class="th-grid" id="th-grid" style="margin-top:8px"></div>
+            </details>
+          </div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- print target: only this subtree renders when printing (see app.css @media print) -->
+  <div id="print-root"><div class="report-doc" id="print-paper"></div></div>
+
+  <script src="vendor/plotly.min.js"></script>
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script src="demo/flight_data.js"></script>
+  <script type="module" src="modules/main.js"></script>
+</body>
+</html>

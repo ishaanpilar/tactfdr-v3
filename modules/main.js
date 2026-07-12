@@ -1,0 +1,336 @@
+/* TACT-FDR v3 — application wiring.
+   Owns: upload flow, view switching, transport bar, altitude-profile
+   timeline, keyboard shortcuts. All flight state lives in the model;
+   all timing lives in the single playback clock. */
+
+import { parseWorkbook, fromTrackArray } from './data/excel-parser.js';
+import { buildModel } from './data/flight-model.js';
+import { parseLimitsWorkbook } from './data/limits.js';
+import { createPlayback } from './engine/playback.js';
+import { smoothArray } from './engine/interpolate.js';
+import { createChartView } from './views/chart.js';
+import { createMapView } from './views/map.js';
+import { createInstruments } from './views/instruments.js';
+import { createEventLog } from './views/event-log.js';
+import { createReport } from './export/report.js';
+
+const $ = (sel) => document.querySelector(sel);
+
+let model = null, playback = null, chart = null, mapView = null, eventLog = null, report = null;
+let currentEvents = [];
+
+/* ---------------- upload flow ---------------- */
+const overlay = $('#upload-overlay');
+const dropZone = $('#drop-zone');
+const fileInput = $('#file-input');
+const statusEl = $('#upload-status');
+
+function setStatus(msg, cls) { statusEl.textContent = msg; statusEl.className = cls || ''; }
+
+dropZone.addEventListener('click', (e) => { if (e.target.id !== 'browse-link') fileInput.click(); });
+$('#browse-link').addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
+
+function handleFile(file) {
+  if (!/\.xlsx?$/i.test(file.name)) { setStatus('ERROR: only .xlsx / .xls accepted', 'err'); return; }
+  setStatus('PROCESSING ' + file.name + ' …', 'busy');
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const parsed = parseWorkbook(e.target.result, file.name);
+      if (parsed.timeSeconds.length < 2) { setStatus('ERROR: no time-coded data rows found', 'err'); return; }
+      setStatus('OK — ' + parsed.metadata.records + ' records', 'ok');
+      setTimeout(() => loadFlight(parsed), 400);
+    } catch (err) {
+      setStatus('ERROR: ' + err.message, 'err');
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+$('#btn-demo').addEventListener('click', () => {
+  if (typeof FLIGHT_DATA !== 'undefined' && FLIGHT_DATA.length > 1) {
+    loadFlight(fromTrackArray(FLIGHT_DATA));
+  } else {
+    setStatus('ERROR: demo/flight_data.js not found', 'err');
+  }
+});
+
+$('#btn-upload-new').addEventListener('click', () => {
+  if (playback) playback.pause();
+  fileInput.value = '';
+  setStatus('', '');
+  overlay.classList.remove('hidden');
+});
+
+/* ---------------- flight load ---------------- */
+function loadFlight(parsed) {
+  if (playback) playback.destroy();
+
+  model = buildModel(parsed);
+  playback = createPlayback(model);
+
+  overlay.classList.add('hidden');
+
+  // topbar
+  $('#tb-file').textContent = model.metadata.filename;
+  $('#tb-date').textContent = model.metadata.date || '—';
+  $('#tb-duration').textContent = model.metadata.duration;
+  $('#tb-records').textContent = model.metadata.records.toLocaleString();
+
+  // views
+  chart = createChartView($('#chart-host'), model, playback, () => currentEvents,
+    () => eventLog ? eventLog.limitsTable : []);
+  mapView = createMapView($('#map-host'), $('#map-hud'), model, playback);
+  createInstruments($('#instruments'), model, playback);
+  eventLog = createEventLog($('#events-panel-root'), model, playback, (events) => {
+    currentEvents = events;
+    $('#nav-events-badge').textContent = events.length;
+    $('#nav-events-badge').style.display = events.length ? '' : 'none';
+    if (chart) chart.refresh();
+  });
+  report = createReport($('#report-paper'), $('#print-paper'), model, () => currentEvents, $('#chart-host'));
+  report.setLimitsSourceLabel(() => eventLog.limitsLabel);
+
+  buildParamList();
+  buildTimelineProfile();
+  buildTransport();
+
+  $('#nav-map').disabled = !mapView.available;
+  $('#nav-map').title = mapView.available ? '' : 'No GPS track in this file';
+
+  setView('chart');
+  playback.onTick(updateTransport);
+  playback.onState(updatePlayButton);
+  playback.seek(0);
+  chart.refresh();
+}
+
+/* ---------------- parameter list ---------------- */
+function buildParamList() {
+  const listEl = $('#param-list');
+  const params = Object.values(model.parameters);
+  listEl.innerHTML = params.map(p => `
+    <button class="param-row ${p.visible ? 'on' : ''}" data-col="${p.colIndex}">
+      <span class="swatch" style="background:${p.color};color:${p.color}"></span>
+      <span class="pname" title="${p.name}">${p.name}</span>
+      <span class="punit">${p.unit}</span>
+    </button>
+  `).join('');
+  listEl.querySelectorAll('.param-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const p = model.parameters[row.dataset.col];
+      p.visible = !p.visible;
+      row.classList.toggle('on', p.visible);
+      chart.refresh();
+    });
+  });
+  $('#btn-params-all').onclick = () => {
+    params.forEach(p => p.visible = true);
+    listEl.querySelectorAll('.param-row').forEach(r => r.classList.add('on'));
+    chart.refresh();
+  };
+  $('#btn-params-none').onclick = () => {
+    params.forEach(p => p.visible = false);
+    listEl.querySelectorAll('.param-row').forEach(r => r.classList.remove('on'));
+    chart.refresh();
+  };
+}
+
+/* ---------------- display controls ---------------- */
+$('#ctl-window').addEventListener('change', (e) => chart && chart.setWindow(parseInt(e.target.value)));
+$('#ctl-ymode').addEventListener('change', (e) => {
+  const mode = e.target.value;
+  $('#manual-y').style.display = mode === 'manual' ? '' : 'none';
+  applyYMode();
+});
+$('#y-min').addEventListener('change', applyYMode);
+$('#y-max').addEventListener('change', applyYMode);
+function applyYMode() {
+  if (!chart) return;
+  chart.setYMode($('#ctl-ymode').value, parseFloat($('#y-min').value) || 0, parseFloat($('#y-max').value) || 100);
+}
+$('#ctl-chartmode').addEventListener('change', (e) => chart && chart.setChartMode(e.target.value));
+$('#btn-export').addEventListener('click', () => chart && chart.exportPNG());
+
+/* ---------------- view switching ---------------- */
+function setView(name) {
+  document.querySelector('.app').dataset.view = name;
+  for (const v of ['chart', 'map', 'report']) {
+    $('#view-' + v).classList.toggle('active', name === v);
+    $('#nav-' + v).classList.toggle('active', name === v);
+  }
+  if (name === 'map' && mapView) mapView.show();
+  if (name === 'chart' && chart) { chart.resize(); chart.refresh(); }
+  if (name === 'report' && report) report.generate();
+}
+$('#nav-chart').addEventListener('click', () => setView('chart'));
+$('#nav-map').addEventListener('click', () => setView('map'));
+$('#nav-report').addEventListener('click', () => setView('report'));
+$('#btn-print-report').addEventListener('click', async () => {
+  if (report) { await report.generate(); report.print(); }
+});
+
+/* ---------------- limits import ---------------- */
+$('#btn-import-limits').addEventListener('click', () => $('#limits-input').click());
+$('#limits-input').addEventListener('change', () => {
+  const file = $('#limits-input').files[0];
+  if (!file || !eventLog) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const table = parseLimitsWorkbook(e.target.result);
+      eventLog.setLimits(table, file.name);
+      const lbl = $('#limits-label');
+      lbl.textContent = `${file.name} (${table.length})`;
+      lbl.style.color = 'var(--nominal)';
+      chart.refresh();
+    } catch (err) {
+      alert('Limits import failed: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+/* ---------------- timeline profile ---------------- */
+function buildTimelineProfile() {
+  const canvas = $('#alt-profile');
+  const wrap = $('#profile-wrap');
+  const cursor = $('#profile-cursor');
+
+  function draw() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.fillStyle = 'rgba(255,255,255,.02)';
+    ctx.fillRect(0, 0, w, h);
+
+    const alt = model.altData, spd = model.spdData;
+    if (!alt) return;
+    const sAlt = smoothArray(alt.map(v => v || 0));
+    const maxA = Math.max(1, ...sAlt);
+    const x = (i) => (i / (model.n - 1)) * w;
+
+    // altitude area — caution amber, per ACCS map of alt readouts
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    for (let i = 0; i < model.n; i++) ctx.lineTo(x(i), h - (sAlt[i] / maxA) * (h - 8));
+    ctx.lineTo(w, h); ctx.closePath();
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, 'rgba(255,194,75,.30)');
+    grad.addColorStop(1, 'rgba(255,194,75,.02)');
+    ctx.fillStyle = grad; ctx.fill();
+    ctx.beginPath();
+    for (let i = 0; i < model.n; i++) {
+      const y = h - (sAlt[i] / maxA) * (h - 8);
+      i === 0 ? ctx.moveTo(x(i), y) : ctx.lineTo(x(i), y);
+    }
+    ctx.strokeStyle = 'rgba(255,194,75,.75)'; ctx.lineWidth = 1.2; ctx.stroke();
+
+    // speed trace — nominal green
+    if (spd) {
+      const sSpd = smoothArray(spd.map(v => v || 0));
+      const maxS = Math.max(1, ...sSpd);
+      ctx.beginPath();
+      for (let i = 0; i < model.n; i++) {
+        const y = h - (sSpd[i] / maxS) * (h - 8);
+        i === 0 ? ctx.moveTo(x(i), y) : ctx.lineTo(x(i), y);
+      }
+      ctx.strokeStyle = 'rgba(70,224,138,.55)'; ctx.lineWidth = 1; ctx.stroke();
+    }
+
+    // event ticks
+    for (const evt of currentEvents) {
+      ctx.fillStyle = evt.color;
+      ctx.fillRect(x(evt.index) - 0.5, 0, 1, 6);
+    }
+  }
+
+  draw();
+  new ResizeObserver(draw).observe(wrap);
+
+  wrap.addEventListener('click', (e) => {
+    const rect = wrap.getBoundingClientRect();
+    const frac = (e.clientX - rect.left) / rect.width;
+    playback.seek(frac * (model.n - 1));
+  });
+
+  playback.onTick((pos) => {
+    cursor.style.left = (pos / (model.n - 1)) * 100 + '%';
+  });
+}
+
+/* ---------------- transport ---------------- */
+function buildTransport() {
+  $('#btn-start').onclick = () => { playback.pause(); playback.seek(0); };
+  $('#btn-end').onclick = () => { playback.pause(); playback.seek(model.n - 1); };
+  $('#btn-play').onclick = () => playback.toggle();
+  $('#speed-select').onchange = (e) => playback.setSpeed(parseFloat(e.target.value));
+  playback.setSpeed(parseFloat($('#speed-select').value));
+
+  $('#btn-follow').onclick = () => $('#btn-follow').classList.toggle('engaged', mapView.toggleFollow());
+  $('#btn-trail').onclick = () => $('#btn-trail').classList.toggle('engaged', mapView.toggleTrail());
+
+  const scrub = $('#scrub');
+  let dragging = false;
+  const seekFromEvent = (e) => {
+    const rect = scrub.getBoundingClientRect();
+    const frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    playback.seek(frac * (model.n - 1));
+  };
+  scrub.addEventListener('pointerdown', (e) => { dragging = true; scrub.setPointerCapture(e.pointerId); seekFromEvent(e); });
+  scrub.addEventListener('pointermove', (e) => { if (dragging) seekFromEvent(e); });
+  scrub.addEventListener('pointerup', () => { dragging = false; });
+}
+
+function updateTransport(pos) {
+  const frac = (pos / (model.n - 1)) * 100;
+  $('#scrub-fill').style.width = frac + '%';
+  $('#scrub-handle').style.left = frac + '%';
+  $('#time-display').textContent = model.labelAt(pos) + ' / ' + model.metadata.duration;
+}
+
+function updatePlayButton(playing) {
+  $('#icon-play').style.display = playing ? 'none' : '';
+  $('#icon-pause').style.display = playing ? '' : 'none';
+}
+
+/* ---------------- keyboard ---------------- */
+document.addEventListener('keydown', (e) => {
+  if (!playback || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  const step = Math.max(1, Math.floor(model.n * 0.02));
+  switch (e.key) {
+    case ' ': e.preventDefault(); playback.toggle(); break;
+    case 'ArrowLeft': e.preventDefault(); playback.nudge(e.shiftKey ? -step * 2.5 : -step); break;
+    case 'ArrowRight': e.preventDefault(); playback.nudge(e.shiftKey ? step * 2.5 : step); break;
+    case 'Home': e.preventDefault(); playback.pause(); playback.seek(0); break;
+    case 'End': e.preventDefault(); playback.pause(); playback.seek(model.n - 1); break;
+    case 'f': case 'F':
+      if (mapView && mapView.available) $('#btn-follow').classList.toggle('engaged', mapView.toggleFollow());
+      break;
+  }
+});
+
+/* ---------------- clock ---------------- */
+setInterval(() => { $('#tb-clock').textContent = new Date().toTimeString().slice(0, 8); }, 1000);
+
+/* ---------------- URL params (dev/demo convenience) ----------------
+   ?demo         auto-load the bundled demo flight
+   ?view=map     switch to map replay after load                     */
+const urlParams = new URLSearchParams(location.search);
+if (urlParams.has('demo') && typeof FLIGHT_DATA !== 'undefined' && FLIGHT_DATA.length > 1) {
+  loadFlight(fromTrackArray(FLIGHT_DATA));
+  const v = urlParams.get('view');
+  if (v === 'map' || v === 'report') setView(v);
+}
