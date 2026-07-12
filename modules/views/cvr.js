@@ -62,30 +62,43 @@ export function createCVR(root, model, playback) {
   ]);
 
   async function loadAudio(arrayBuffer, filename, objectUrl) {
+    // long recordings decode slowly (a 100-min CVR is ~200 MB of PCM) —
+    // the generous timeout is only a safety net against no-device hangs
     let buf = null;
     try {
       const ctx = new OfflineAudioContext(1, 8, 8000);
-      buf = await withTimeout(ctx.decodeAudioData(arrayBuffer), 8000, 'audio decode');
+      buf = await withTimeout(ctx.decodeAudioData(arrayBuffer), 45000, 'audio decode');
     } catch (e) {
-      throw new Error('Could not decode audio (' + e.message + ')');
+      console.warn('CVR waveform decode unavailable (' + e.message + ') — trying metadata only');
     }
-    duration = buf.duration;
 
-    const ch = buf.getChannelData(0);
-    const BINS = 600;
-    const per = Math.max(1, Math.floor(ch.length / BINS));
-    peaks = new Float32Array(BINS);
-    for (let b = 0; b < BINS; b++) {
-      let max = 0;
-      for (let i = b * per; i < Math.min(ch.length, (b + 1) * per); i += 16) {
-        const v = Math.abs(ch[i]);
-        if (v > max) max = v;
+    if (buf) {
+      duration = buf.duration;
+      const ch = buf.getChannelData(0);
+      const BINS = 600;
+      const per = Math.max(1, Math.floor(ch.length / BINS));
+      peaks = new Float32Array(BINS);
+      for (let b = 0; b < BINS; b++) {
+        let max = 0;
+        for (let i = b * per; i < Math.min(ch.length, (b + 1) * per); i += 16) {
+          const v = Math.abs(ch[i]);
+          if (v > max) max = v;
+        }
+        peaks[b] = max;
       }
-      peaks[b] = max;
     }
 
     audio.onerror = () => console.warn('CVR: media element cannot play this format; waveform/transcript sync still active');
     audio.src = objectUrl;
+
+    if (!buf) {
+      // no decode (rare) — duration from the media element, no waveform
+      peaks = null;
+      duration = await withTimeout(new Promise((res, rej) => {
+        audio.onloadedmetadata = () => res(audio.duration);
+        audio.onerror = () => rej(new Error('unsupported audio format'));
+      }), 6000, 'audio metadata');
+    }
 
     el.status.textContent = `${filename} · ${fmtT(duration)}`;
     el.status.classList.add('g');
@@ -218,9 +231,28 @@ export function createCVR(root, model, playback) {
     async loadTranscriptFile(file) {
       loadTranscript(await file.text(), file.name);
     },
-    /* demo assets fetched relative to the app root (works on Pages + localhost);
-       transcript and audio load independently so one failing doesn't hide the other */
+    /* demo assets fetched relative to the app root; the real CVR recording
+       is preferred, falling back to the synthetic sample + its transcript.
+       Audio and transcript load independently so one failing doesn't hide
+       the other. */
     async loadDemo() {
+      let real = false;
+      try {
+        const aRes = await fetch('demo/cvr_real.ogg');
+        if (aRes.ok) {
+          const buf = await aRes.arrayBuffer();
+          await loadAudio(buf.slice(0), 'CVR data (real)', URL.createObjectURL(new Blob([buf], { type: 'audio/ogg' })));
+          real = true;
+        }
+      } catch (e) { console.warn('real CVR audio failed:', e); }
+      if (real) {
+        // real recording has no transcript yet — tools/transcribe.py generates one
+        try {
+          const tRes = await fetch('demo/cvr_real.srt');
+          if (tRes.ok) loadTranscript(await tRes.text(), 'cvr_real.srt');
+        } catch { /* optional */ }
+        return;
+      }
       try {
         const tRes = await fetch('demo/cvr_demo.srt');
         if (tRes.ok) loadTranscript(await tRes.text(), 'cvr_demo.srt');

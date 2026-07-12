@@ -69,12 +69,36 @@ async function handleFiles(files) {
   }
 }
 
-$('#btn-demo').addEventListener('click', () => {
-  if (typeof FLIGHT_DATA !== 'undefined' && FLIGHT_DATA.length > 1) {
-    loadFlight(fromTrackArray(FLIGHT_DATA));
-  } else {
-    setStatus('ERROR: demo/flight_data.js not found', 'err');
+/* Demo = the real IA-3101 sortie (gp1 + gp2 merged) with the real CVR
+   recording; falls back to the legacy flight_data.js track if the demo
+   workbooks are missing from this deployment. */
+async function loadDemoFlight() {
+  await dictReady;
+  try {
+    const entries = [];
+    for (const url of ['demo/gp1.xlsx', 'demo/gp2.xlsx']) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(url + ' → HTTP ' + res.status);
+      entries.push({ buffer: await res.arrayBuffer(), name: url.split('/').pop() });
+    }
+    loadFlight(parseWorkbooks(entries, DICT));
+    if (cvr) cvr.loadDemo();
+    return true;
+  } catch (err) {
+    console.warn('real demo flight unavailable (' + err.message + ') — falling back to flight_data.js');
+    if (typeof FLIGHT_DATA !== 'undefined' && FLIGHT_DATA.length > 1) {
+      loadFlight(fromTrackArray(FLIGHT_DATA));
+      if (cvr) cvr.loadDemo();
+      return true;
+    }
+    setStatus('ERROR: demo data not found', 'err');
+    return false;
   }
+}
+
+$('#btn-demo').addEventListener('click', () => {
+  setStatus('LOADING demo flight …', 'busy');
+  loadDemoFlight();
 });
 
 $('#btn-upload-new').addEventListener('click', () => {
@@ -414,10 +438,8 @@ async function bootFromParams() {
       console.error(err);
       return;
     }
-  } else if (urlParams.has('demo') && typeof FLIGHT_DATA !== 'undefined' && FLIGHT_DATA.length > 1) {
-    await dictReady;
-    loadFlight(fromTrackArray(FLIGHT_DATA));
-    if (cvr) cvr.loadDemo(); // synthetic CVR sample — no-op if assets missing
+  } else if (urlParams.has('demo')) {
+    if (!await loadDemoFlight()) return;
   } else return;
 
   const v = urlParams.get('view');

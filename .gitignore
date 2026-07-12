@@ -1,3 +1,7 @@
 .DS_Store
 *.xlsx
 *.xls
+# demo flight is deliberately bundled (private repo)
+!demo/gp1.xlsx
+!demo/gp2.xlsx
+testdata/
