@@ -148,7 +148,15 @@
         </div>
         <div class="view" id="view-map">
           <section class="panel">
-            <div class="p-head"><span class="p-title">Flight Path Replay</span><span class="p-tag">ONLINE TILES</span></div>
+            <div class="p-head">
+              <span class="p-title">Flight Path Replay</span>
+              <div style="display:flex;gap:6px;align-items:center">
+                <span class="p-tag" id="map-mode-tag">ONLINE TILES</span>
+                <button class="btn inline" id="btn-offline-map" style="height:24px;font-size:9.5px;padding:0 10px" title="Load a .pmtiles offline basemap">Offline Map…</button>
+                <button class="btn cyan inline" id="btn-export-kml" style="height:24px;font-size:9.5px;padding:0 10px" title="Export flight replay for Google Earth">Export KML</button>
+                <input type="file" id="pmtiles-input" accept=".pmtiles" hidden>
+              </div>
+            </div>
             <div class="p-body" style="padding:6px">
               <div id="map-host">
                 <div class="map-hud tl" id="map-hud">
@@ -318,6 +326,8 @@
 
   <script src="vendor/plotly.min.js"></script>
   <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="vendor/pmtiles.js"></script>
+  <script src="vendor/protomaps-leaflet.js"></script>
   <script src="vendor/xlsx.full.min.js"></script>
   <script src="demo/flight_data.js"></script>
   <script type="module" src="modules/main.js"></script>

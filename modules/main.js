@@ -14,6 +14,7 @@ import { createInstruments } from './views/instruments.js';
 import { createEventLog } from './views/event-log.js';
 import { createCVR } from './views/cvr.js';
 import { createReport } from './export/report.js';
+import { downloadKML } from './export/kml.js';
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -179,6 +180,29 @@ $('#nav-report').addEventListener('click', () => setView('report'));
 $('#btn-print-report').addEventListener('click', async () => {
   if (report) { await report.generate(); report.print(); }
 });
+
+/* ---------------- map: KML export + offline basemap ---------------- */
+$('#btn-export-kml').addEventListener('click', () => {
+  if (!model) return;
+  try { downloadKML(model, currentEvents); }
+  catch (err) { alert('KML export failed: ' + err.message); }
+});
+$('#btn-offline-map').addEventListener('click', () => $('#pmtiles-input').click());
+$('#pmtiles-input').addEventListener('change', async () => {
+  const file = $('#pmtiles-input').files[0];
+  if (!file || !mapView) return;
+  await applyOfflineBasemap(file, file.name);
+});
+async function applyOfflineBasemap(source, label) {
+  try {
+    const info = await mapView.loadOfflineBasemap(source, label.toUpperCase());
+    const tag = $('#map-mode-tag');
+    tag.textContent = `OFFLINE · ${label} · z${info.minZoom}–${info.maxZoom}`;
+    tag.classList.add('g');
+  } catch (err) {
+    alert('Offline basemap load failed: ' + err.message);
+  }
+}
 
 /* ---------------- CVR file loading ---------------- */
 $('#btn-cvr-audio').addEventListener('click', () => $('#cvr-audio-input').click());
@@ -352,4 +376,9 @@ if (urlParams.has('demo') && typeof FLIGHT_DATA !== 'undefined' && FLIGHT_DATA.l
   const v = urlParams.get('view');
   if (v === 'map' || v === 'report') setView(v);
   if (cvr) cvr.loadDemo(); // synthetic CVR sample — no-op if assets missing
+  // ?pmtiles=<path-or-url> loads an offline basemap (dev/demo convenience)
+  const pm = urlParams.get('pmtiles');
+  if (pm && mapView && mapView.available) {
+    applyOfflineBasemap(pm, pm.split('/').pop().replace(/\.pmtiles$/, ''));
+  }
 }

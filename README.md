@@ -80,6 +80,26 @@ opens straight to map replay.
 - **Demo assets** — a clearly-labelled *synthetic* CVR wav + transcript
   auto-load with `?demo` so the sync pipeline is demonstrable end-to-end.
 
+## What's in Phase 4
+
+- **KML export** ([modules/export/kml.js](modules/export/kml.js)) — one click in
+  the Map view produces a Google Earth file with a time-animated `gx:Track`
+  replay (drag GE's time slider to fly the flight), the full path, origin/
+  terminus marks, and up to 100 severity-ranked event pins carrying value/
+  limit/duration details. This is the FDR→Google Earth "transformer" — HAL
+  already uses GE, so the 3D replay works in software they trust today.
+- **Offline basemaps** — the Map view's **Offline Map…** button loads a local
+  `.pmtiles` file: vector protomaps extracts render via protomaps-leaflet
+  (dark theme), raster archives via the pmtiles Leaflet layer. This removes
+  the last online dependency. Get real extracts from
+  [protomaps.com/downloads](https://protomaps.com/downloads) (whole-planet or
+  clipped) or `pmtiles extract` for the operating region.
+- **Bundled fallback grid** (`demo/offline_base.pmtiles`, 3.6 KB) — a dark
+  graticule basemap so the replay is usable with zero internet and no extract
+  loaded. Dev/demo shortcut: `?demo&view=map&pmtiles=demo/offline_base.pmtiles`.
+- **Deferred:** CesiumJS in-app 3D (needs a ~30 MB asset decision); KML covers
+  the 3D replay requirement for the HAL demo via Google Earth.
+
 ## Structure
 
 ```text

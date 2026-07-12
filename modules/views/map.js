@@ -32,6 +32,7 @@ export function createMapView(host, hud, model, playback) {
   let followMode = true, showTrail = true;
   let maxAlt = 1;
   let initialized = false;
+  let layersCtl = null, activeBase = null;
 
   const fixes = model.track.filter(t => t !== null);
 
@@ -50,7 +51,9 @@ export function createMapView(host, hud, model, playback) {
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 });
     const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { attribution: '© OpenTopoMap', maxZoom: 17 });
     sat.addTo(map);
-    L.control.layers({ SAT: sat, MAP: osm, TOPO: topo }, {}, { position: 'topright' }).addTo(map);
+    activeBase = sat;
+    layersCtl = L.control.layers({ SAT: sat, MAP: osm, TOPO: topo }, {}, { position: 'topright' }).addTo(map);
+    map.on('baselayerchange', (e) => { activeBase = e.layer; });
 
     // altitude-banded path
     const segs = [];
@@ -120,12 +123,38 @@ export function createMapView(host, hud, model, playback) {
 
   function isVisible() { return host.offsetParent !== null; }
 
+  /* Offline basemap: a local .pmtiles file (vector protomaps extract or
+     raster) replaces the online tile dependency — the client's "proper map
+     downloaded and kept" requirement. Extracts come from protomaps.com or
+     `pmtiles extract` for the operating region. */
+  async function loadOfflineBasemap(source, label) {
+    init();
+    if (!map) throw new Error('Map unavailable (no GPS track loaded)');
+    const p = typeof source === 'string'
+      ? new pmtiles.PMTiles(source)
+      : new pmtiles.PMTiles(new pmtiles.FileSource(source));
+    const header = await p.getHeader();
+
+    let layer;
+    if (header.tileType === 1) { // MVT vector — render with protomaps-leaflet
+      layer = protomapsL.leafletLayer({ url: p, theme: 'dark', attribution: 'Offline basemap' });
+    } else {                     // raster png/jpg/webp — upscale beyond native zoom
+      layer = pmtiles.leafletRasterLayer(p, { attribution: 'Offline basemap', maxZoom: 19, maxNativeZoom: header.maxZoom });
+    }
+    if (activeBase) map.removeLayer(activeBase);
+    layer.addTo(map);
+    activeBase = layer;
+    layersCtl.addBaseLayer(layer, label || 'OFFLINE');
+    return { minZoom: header.minZoom, maxZoom: header.maxZoom, tileType: header.tileType };
+  }
+
   return {
     get available() { return model.hasTrack; },
     show() {
       init();
       if (map) { map.invalidateSize(); update(playback.pos); }
     },
+    loadOfflineBasemap,
     toggleFollow() { followMode = !followMode; return followMode; },
     toggleTrail() {
       showTrail = !showTrail;
