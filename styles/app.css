@@ -122,6 +122,27 @@ input.ctl-num:hover{border-color:var(--intel-50)}
 #scrub-handle{position:absolute;top:50%;transform:translate(-50%,-50%);width:9px;height:15px;background:var(--panel-hi);border:1px solid var(--intel-50);border-radius:2px;left:0%;pointer-events:none}
 #time-display{font-family:var(--mono);font-size:12px;color:var(--txt-2);letter-spacing:.5px;min-width:132px;text-align:center;flex:0 0 auto}
 
+/* ---------- CVR panel ---------- */
+#cvr-panel .p-body{padding:9px 12px}
+.cvr-cols{display:flex;gap:12px;min-height:0}
+.cvr-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.cvr-right{width:340px;flex:0 0 auto;display:flex;flex-direction:column;gap:6px;max-height:150px}
+#cvr-wave-wrap{position:relative;height:52px;cursor:crosshair}
+#cvr-wave{width:100%;height:100%;display:block;border-radius:var(--r-sm)}
+#cvr-cursor{position:absolute;top:0;bottom:0;width:1px;background:var(--intel);box-shadow:var(--glow-intel);pointer-events:none;left:0}
+.cvr-ctl-row{display:flex;align-items:center;gap:5px}
+.cvr-lbl{font-family:var(--cond);font-size:var(--fs-2xs);letter-spacing:var(--ls-label);color:var(--txt-3);text-transform:uppercase;font-weight:600}
+.cvr-nudge{width:26px;height:24px;font-family:var(--mono);font-size:9px}
+#btn-cvr-mute{width:26px;height:24px}
+#btn-cvr-mute svg{width:12px;height:12px}
+#cvr-transcript{flex:1;min-height:0;overflow-y:auto}
+.cvr-seg{display:flex;gap:8px;width:100%;padding:5px 6px;border:none;background:none;border-bottom:1px solid var(--line-2);cursor:pointer;text-align:left;transition:var(--t-fast);border-radius:var(--r-sm);align-items:baseline}
+.cvr-seg:hover{background:var(--intel-06)}
+.cvr-seg.active{background:var(--intel-10);border-bottom-color:transparent}
+.cvr-seg .cs-time{font-size:9px;color:var(--intel);flex:0 0 auto}
+.cvr-seg .cs-text{font-family:var(--semicond);font-size:11.5px;color:var(--txt-2);line-height:1.35}
+.cvr-seg.active .cs-text{color:var(--txt)}
+
 /* ---------- upload overlay ---------- */
 #upload-overlay{position:fixed;inset:0;z-index:500;background:rgba(4,7,11,.88);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;transition:opacity .3s}
 #upload-overlay.hidden{opacity:0;pointer-events:none}

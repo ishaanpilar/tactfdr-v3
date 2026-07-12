@@ -1,0 +1,32 @@
+1
+00:00:04,000 --> 00:00:08,000
+[SYNTHETIC DEMO AUDIO — not a real recording]
+
+2
+00:00:12,000 --> 00:00:16,000
+Rotor start checks complete, all parameters green.
+
+3
+00:00:26,000 --> 00:00:30,000
+Lifting off, hover checks satisfactory.
+
+4
+00:00:42,000 --> 00:00:47,000
+Climbing through four hundred metres, turning onto heading one four zero.
+
+5
+00:01:00,000 --> 00:01:04,000
+Ground speed one zero five knots, altitude steady.
+
+6
+00:01:18,000 --> 00:01:23,000
+Caution — radar altitude approaching briefed ceiling.
+
+7
+00:01:36,000 --> 00:01:40,000
+Commencing descent, speed reducing.
+
+8
+00:01:50,000 --> 00:01:54,000
+Approach checks complete, visual with the pad.
+

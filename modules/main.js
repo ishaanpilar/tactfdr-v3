@@ -12,11 +12,12 @@ import { createChartView } from './views/chart.js';
 import { createMapView } from './views/map.js';
 import { createInstruments } from './views/instruments.js';
 import { createEventLog } from './views/event-log.js';
+import { createCVR } from './views/cvr.js';
 import { createReport } from './export/report.js';
 
 const $ = (sel) => document.querySelector(sel);
 
-let model = null, playback = null, chart = null, mapView = null, eventLog = null, report = null;
+let model = null, playback = null, chart = null, mapView = null, eventLog = null, report = null, cvr = null;
 let currentEvents = [];
 
 /* ---------------- upload flow ---------------- */
@@ -98,6 +99,7 @@ function loadFlight(parsed) {
   });
   report = createReport($('#report-paper'), $('#print-paper'), model, () => currentEvents, $('#chart-host'));
   report.setLimitsSourceLabel(() => eventLog.limitsLabel);
+  cvr = createCVR($('#cvr-panel'), model, playback);
 
   buildParamList();
   buildTimelineProfile();
@@ -176,6 +178,22 @@ $('#nav-map').addEventListener('click', () => setView('map'));
 $('#nav-report').addEventListener('click', () => setView('report'));
 $('#btn-print-report').addEventListener('click', async () => {
   if (report) { await report.generate(); report.print(); }
+});
+
+/* ---------------- CVR file loading ---------------- */
+$('#btn-cvr-audio').addEventListener('click', () => $('#cvr-audio-input').click());
+$('#cvr-audio-input').addEventListener('change', async () => {
+  const file = $('#cvr-audio-input').files[0];
+  if (!file || !cvr) return;
+  try { await cvr.loadAudioFile(file); }
+  catch (err) { alert('CVR audio load failed: ' + err.message); }
+});
+$('#btn-cvr-transcript').addEventListener('click', () => $('#cvr-transcript-input').click());
+$('#cvr-transcript-input').addEventListener('change', async () => {
+  const file = $('#cvr-transcript-input').files[0];
+  if (!file || !cvr) return;
+  try { await cvr.loadTranscriptFile(file); }
+  catch (err) { alert('Transcript load failed: ' + err.message); }
 });
 
 /* ---------------- limits import ---------------- */
@@ -333,4 +351,5 @@ if (urlParams.has('demo') && typeof FLIGHT_DATA !== 'undefined' && FLIGHT_DATA.l
   loadFlight(fromTrackArray(FLIGHT_DATA));
   const v = urlParams.get('view');
   if (v === 'map' || v === 'report') setView(v);
+  if (cvr) cvr.loadDemo(); // synthetic CVR sample — no-op if assets missing
 }

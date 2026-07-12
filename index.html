@@ -177,6 +177,47 @@
           </section>
         </div>
 
+        <!-- CVR -->
+        <section class="panel" id="cvr-panel" style="flex:0 0 auto">
+          <div class="p-head">
+            <span class="p-title">CVR · Cockpit Voice</span>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span class="p-tag" id="cvr-status">NO AUDIO</span>
+              <button class="btn inline" id="btn-cvr-audio" style="height:24px;font-size:9.5px;padding:0 10px">Audio…</button>
+              <button class="btn inline" id="btn-cvr-transcript" style="height:24px;font-size:9.5px;padding:0 10px">Transcript…</button>
+              <input type="file" id="cvr-audio-input" accept="audio/*,.wav,.mp3,.m4a,.ogg" hidden>
+              <input type="file" id="cvr-transcript-input" accept=".srt,.vtt,.json" hidden>
+            </div>
+          </div>
+          <div class="p-body" id="cvr-body" style="display:none;gap:8px">
+            <div class="cvr-cols">
+              <div class="cvr-left">
+                <div id="cvr-wave-wrap">
+                  <canvas id="cvr-wave"></canvas>
+                  <div id="cvr-cursor"></div>
+                </div>
+                <div class="cvr-ctl-row">
+                  <span class="mono" id="cvr-time" style="font-size:10px;color:var(--txt-2)">--:-- / --:--</span>
+                  <div style="flex:1"></div>
+                  <label class="cvr-lbl" for="cvr-offset">FDR Offset (s)</label>
+                  <button class="t-btn cvr-nudge" data-nudge="-1">−1</button>
+                  <button class="t-btn cvr-nudge" data-nudge="-0.1">−.1</button>
+                  <input class="ctl-num" id="cvr-offset" type="number" step="0.1" value="0.0" style="width:70px">
+                  <button class="t-btn cvr-nudge" data-nudge="0.1">+.1</button>
+                  <button class="t-btn cvr-nudge" data-nudge="1">+1</button>
+                  <button class="t-btn" id="btn-cvr-mute" title="Mute CVR audio">
+                    <svg viewBox="0 0 16 16"><path d="M2 6h3l4-3v10l-4-3H2z" fill="currentColor"/><path d="M11 5.5c1.4 1.4 1.4 3.6 0 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="cvr-right">
+                <input class="ctl-num" id="cvr-search" type="search" placeholder="Search transcript…" style="width:100%">
+                <div id="cvr-transcript" class="scroll-thin"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- timeline + transport -->
         <section class="panel" id="timeline-panel" style="flex:0 0 auto">
           <div class="p-body" style="padding:9px 12px">
