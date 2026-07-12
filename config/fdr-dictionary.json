@@ -1,0 +1,1383 @@
+{
+ "groups": {
+  "gp1": {
+   "title": "Parameter Extreme Limits",
+   "params": {
+    "nmr": {
+     "abbr": "NMR",
+     "description": "MAIN ROTOR RPM",
+     "unit": "%",
+     "min": 90.0,
+     "max": 110.0
+    },
+    "nf1": {
+     "abbr": "NF1",
+     "description": "ENGINE 1 FREE TURBINE RPM",
+     "unit": "%",
+     "min": 90.0,
+     "max": 108.4
+    },
+    "nf2": {
+     "abbr": "NF2",
+     "description": "ENGINE 2 FREE TURBINE RPM",
+     "unit": "%",
+     "min": 90.0,
+     "max": 108.4
+    },
+    "ng1": {
+     "abbr": "NG1",
+     "description": "ENGINE  1 GAS GENERATOR RPM",
+     "unit": "%",
+     "min": 62.0,
+     "max": 101.0
+    },
+    "ng2": {
+     "abbr": "NG2",
+     "description": "ENGINE  2 GAS GENERATOR RPM",
+     "unit": "%",
+     "min": 62.0,
+     "max": 101.0
+    },
+    "t451": {
+     "abbr": "T451",
+     "description": "ENGINE GAS TURBINE TEMP 1",
+     "unit": "deg C",
+     "min": null,
+     "max": 924.0,
+     "limitNote": "924°C (AEO) ALL ENGINES OPERATIVE\n978° (OEI) ONE ENGINE INOPERATIVE-SCR"
+    },
+    "t452": {
+     "abbr": "T452",
+     "description": "ENGINE GAS TURBINE TEMP 2",
+     "unit": "deg C",
+     "min": null,
+     "max": 924.0,
+     "limitNote": "924°C (AEO) ALL ENGINES OPERATIVE\n978° (OEI) ONE ENGINE INOPERATIVE-SCR"
+    },
+    "q1": {
+     "abbr": "Q1",
+     "description": "ENGINE 1 TORQUE",
+     "unit": "%",
+     "min": null,
+     "max": 91.0,
+     "limitNote": "91% (AEO) ALL ENGINES OPERATIVE\n114% (OEI) ONE ENGINE INOPERATIVE-SCR"
+    },
+    "q2": {
+     "abbr": "Q2",
+     "description": "ENGINE 2 TORQUE",
+     "unit": "%",
+     "min": null,
+     "max": 91.0,
+     "limitNote": "91% (AEO) ALL ENGINES OPERATIVE\n114% (OEI) ONE ENGINE INOPERATIVE-SCR"
+    },
+    "dalpha": {
+     "abbr": "dalpha",
+     "description": "LATERAL CYCLIC STICK POSITION",
+     "unit": "%",
+     "min": null,
+     "max": null,
+     "limitNote": "NO LIMITS"
+    },
+    "dbeta": {
+     "abbr": "dbeta",
+     "description": "LONGITUDINAL CYCLIC STICK POSITION",
+     "unit": "%",
+     "min": null,
+     "max": null,
+     "limitNote": "NO LIMITS"
+    },
+    "dtheta": {
+     "abbr": "dtheta",
+     "description": "COLLECTIVE STICK POSITION",
+     "unit": "%",
+     "min": null,
+     "max": null,
+     "limitNote": "NO LIMITS"
+    },
+    "ddelta": {
+     "abbr": "ddelta",
+     "description": "PEDAL POSITION",
+     "unit": "%",
+     "min": null,
+     "max": null,
+     "limitNote": "NO LIMITS"
+    },
+    "zpadc1": {
+     "abbr": "Zp-ADC-1",
+     "description": "BARO ALTITUDE (Zp)",
+     "unit": "m",
+     "min": null,
+     "max": null
+    },
+    "iasadc1": {
+     "abbr": "IAS-ADC1",
+     "description": "INDICATED AIR SPEED (IAS)",
+     "unit": "KNT",
+     "min": null,
+     "max": null
+    },
+    "hdg#1": {
+     "abbr": "hdg#1",
+     "description": "Heading angle"
+    },
+    "theta#1": {
+     "abbr": "theta#1",
+     "description": "PITCH ANGLE (theta)",
+     "unit": "deg",
+     "min": null,
+     "max": null
+    },
+    "phi#1": {
+     "abbr": "phi#1",
+     "description": "ROLL ANGLE (Phi)",
+     "unit": "deg",
+     "min": null,
+     "max": null
+    },
+    "nx1": {
+     "abbr": "Nx1",
+     "description": "LONGITUDINAL ACCELERATION (Nx)",
+     "unit": "g",
+     "min": null,
+     "max": null
+    },
+    "ny1": {
+     "abbr": "Ny1",
+     "description": "LATERAL ACCELERATION (Ny)",
+     "unit": "g",
+     "min": null,
+     "max": null
+    },
+    "nz1": {
+     "abbr": "Nz1",
+     "description": "NORMAL ACCELERATION (Nz)",
+     "unit": "g",
+     "min": null,
+     "max": null
+    },
+    "p#1": {
+     "abbr": "p#1",
+     "description": "ROLL RATE",
+     "unit": "deg/sec",
+     "min": null,
+     "max": null
+    },
+    "q#1": {
+     "abbr": "q#1",
+     "description": "PITCH RATE",
+     "unit": "deg/sec",
+     "min": null,
+     "max": null
+    },
+    "r#1": {
+     "abbr": "r#1",
+     "description": "YAW RATE",
+     "unit": "deg/sec",
+     "min": null,
+     "max": null
+    },
+    "mmi": {
+     "abbr": "MMI",
+     "description": "MAST MOMENT INDICATION",
+     "unit": "KNM",
+     "min": null,
+     "max": 35.0,
+     "limitNote": "35 Knm"
+    },
+    "delng1": {
+     "abbr": "delng1",
+     "description": "ENGINE 1 LIMIT(DELTA NG 1)",
+     "unit": "%",
+     "min": null,
+     "max": 0.0,
+     "limitNote": "0% (AEO) ALL ENGINES OPERATIVE\n+4.2 (OEI) ONE ENGINE INOPERATIVE-SCR"
+    },
+    "delng2": {
+     "abbr": "delng2",
+     "description": "ENGINE 2 LIMIT (DELTA NG 2)",
+     "unit": "%",
+     "min": null,
+     "max": 0.0,
+     "limitNote": "0% (AEO) ALL ENGINES OPERATIVE\n+4.2 (OEI) ONE ENGINE INOPERATIVE-SCR"
+    },
+    "hydoilprlh": {
+     "abbr": "Hydoilprlh",
+     "description": "HYDRAULIC OIL PRESSURE LH",
+     "unit": "bar",
+     "min": 180.0,
+     "max": 220.0
+    },
+    "hydoprh": {
+     "abbr": "Hyd_OPRH",
+     "description": "Hyd oil pressure RH"
+    },
+    "mgbot": {
+     "abbr": "MGB_OT",
+     "description": "MGB oil Temp"
+    },
+    "mgbop": {
+     "abbr": "MGB_OP",
+     "description": "MGB oil pressure"
+    },
+    "hdg1": {
+     "abbr": "HDG1",
+     "description": "HEADING ANGLE (hdg)",
+     "unit": "deg",
+     "min": null,
+     "max": null
+    },
+    "vatrvw": {
+     "abbr": "Vatrvw",
+     "description": "TRVWS-Axial Vibration",
+     "unit": "IPS",
+     "min": null,
+     "max": null
+    },
+    "vtrvw": {
+     "abbr": "Vtrvw",
+     "description": "TRVWS-Radial vibration",
+     "unit": "IPS",
+     "min": null,
+     "max": null
+    },
+    "hydoilprrh": {
+     "abbr": "hydoilprrh",
+     "description": "HYDRAULIC OIL PRESSURE RH",
+     "unit": "bar",
+     "min": 180.0,
+     "max": 220.0
+    },
+    "mgboiltemp": {
+     "abbr": "mgboil_temp",
+     "description": "MGB OIL TEMPERATURE",
+     "unit": "deg C",
+     "min": null,
+     "max": 105.0
+    },
+    "mgboilpr": {
+     "abbr": "mgboilpr",
+     "description": "MGB OIL PRESSURE",
+     "unit": "bar",
+     "min": null,
+     "max": 3.5,
+     "limitNote": "3.5 bar"
+    }
+   }
+  },
+  "gp2": {
+   "title": "",
+   "params": {
+    "gdspeed": {
+     "abbr": "Gd speed",
+     "description": "Ground speed"
+    },
+    "wdspeed": {
+     "abbr": "Wdspeed",
+     "description": "Wind speed"
+    },
+    "wddir": {
+     "abbr": "Wddir",
+     "description": "Wind Direction",
+     "unit": "deg"
+    },
+    "driftang": {
+     "abbr": "drift ang",
+     "description": "Drift Angle",
+     "unit": "deg"
+    },
+    "impttemp": {
+     "abbr": "impt temp",
+     "description": "Impact Tempareture",
+     "unit": "deg C"
+    },
+    "stattemp": {
+     "abbr": "stat temp",
+     "description": "Static Tempareture",
+     "unit": "deg C"
+    },
+    "selcourse": {
+     "abbr": "sel course",
+     "description": "Select Course",
+     "unit": "deg"
+    },
+    "destrack": {
+     "abbr": "des track",
+     "description": "Desired Track",
+     "unit": "deg"
+    },
+    "pplat": {
+     "abbr": "pp lat",
+     "description": "Present Position Latitude",
+     "unit": "deg"
+    },
+    "pplong": {
+     "abbr": "pp long",
+     "description": "Present Position Longitude",
+     "unit": "deg"
+    },
+    "radalt": {
+     "abbr": "radalt",
+     "description": "Radio altitude",
+     "unit": "mtr"
+    },
+    "gmt152": {
+     "abbr": "GMT152",
+     "description": ""
+    },
+    "gmt153": {
+     "abbr": "GMT153",
+     "description": ""
+    },
+    "gmttenth": {
+     "abbr": "GMT Tenth",
+     "description": ""
+    },
+    "gdspd": {
+     "abbr": "GDSPD",
+     "description": "Ground Speed",
+     "unit": "Kmph"
+    },
+    "wdspd": {
+     "abbr": "WDSPD",
+     "description": "Wind Speed",
+     "unit": "Kt"
+    }
+   }
+  },
+  "gp5": {
+   "title": "Air Data (ADC1)",
+   "params": {
+    "zpadc1": {
+     "abbr": "Zp-ADC1",
+     "description": "Baro Altitude"
+    },
+    "zpadc2": {
+     "abbr": "Zp-ADC2",
+     "description": "Baro Altitude"
+    },
+    "iasadc1": {
+     "abbr": "IAS-ADC1",
+     "description": "Indicated Air Speed"
+    },
+    "iasadc2": {
+     "abbr": "IAS-ADC2",
+     "description": "Indicated Air Speed"
+    },
+    "hdg#1": {
+     "abbr": "hdg#1",
+     "description": "heading angle"
+    },
+    "theta#1": {
+     "abbr": "theta#1",
+     "description": "Pitch angle"
+    },
+    "phi#1": {
+     "abbr": "phi#1",
+     "description": "Roll angle"
+    },
+    "nx1": {
+     "abbr": "Nx1",
+     "description": "Longitudinal acceleration"
+    },
+    "ny1": {
+     "abbr": "Ny1",
+     "description": "Lateral Acceleration"
+    },
+    "nz1": {
+     "abbr": "Nz1",
+     "description": "Normal Acceleration"
+    },
+    "p#1": {
+     "abbr": "p#1",
+     "description": "Roll rate"
+    },
+    "q#1": {
+     "abbr": "q#1",
+     "description": "Pitch Rate"
+    },
+    "r#1": {
+     "abbr": "r#1",
+     "description": "Yaw rate"
+    },
+    "ip#1": {
+     "abbr": "I/P#1",
+     "description": "input discrete status"
+    },
+    "op#1": {
+     "abbr": "O/P#1",
+     "description": "output discrete status"
+    },
+    "genop#2": {
+     "abbr": "gen op#2",
+     "description": "Generator operating mode status"
+    },
+    "fail#1": {
+     "abbr": "FAIL#1",
+     "description": "failure status"
+    }
+   }
+  },
+  "gp6": {
+   "title": "AFCS Lane 1 Status",
+   "params": {
+    "zpadc1": {
+     "abbr": "Zp-ADC1",
+     "description": "Baro Altitude"
+    },
+    "zpadc2": {
+     "abbr": "Zp-ADC2",
+     "description": "Baro Altitude"
+    },
+    "iasadc1": {
+     "abbr": "IAS-ADC1",
+     "description": "Indicated Air Speed"
+    },
+    "iasadc2": {
+     "abbr": "IAS-ADC2",
+     "description": "Indicated Air Speed"
+    },
+    "hdg#2": {
+     "abbr": "hdg#2",
+     "description": "heading angle"
+    },
+    "theta#2": {
+     "abbr": "theta#2",
+     "description": "Pitch angle"
+    },
+    "phi#2": {
+     "abbr": "phi#2",
+     "description": "Roll angle"
+    },
+    "nx2": {
+     "abbr": "Nx2",
+     "description": "Longitudinal acceleration"
+    },
+    "ny2": {
+     "abbr": "Ny2",
+     "description": "Lateral Acceleration"
+    },
+    "nz2": {
+     "abbr": "Nz2",
+     "description": "Normal Acceleration"
+    },
+    "p#2": {
+     "abbr": "p#2",
+     "description": "Roll rate"
+    },
+    "q#2": {
+     "abbr": "q#2",
+     "description": "Pitch Rate"
+    },
+    "r#2": {
+     "abbr": "r#2",
+     "description": "Yaw rate"
+    },
+    "ip#2": {
+     "abbr": "I/P#2",
+     "description": "input discrete status"
+    },
+    "op#2": {
+     "abbr": "O/P#2",
+     "description": "output discrete status"
+    },
+    "genop#2": {
+     "abbr": "gen op #2",
+     "description": "Generator operating mode status"
+    },
+    "failst#2": {
+     "abbr": "FAIL ST #2",
+     "description": "failure status"
+    }
+   }
+  },
+  "gp9": {
+   "title": "Systems Warnings",
+   "params": {
+    "chp1": {
+     "abbr": "chp1",
+     "description": "MGB chip warning LH",
+     "trigger": "When the chip is detected by chip detector and not burnt by chip burning module, warning is ON",
+     "discrete": true
+    },
+    "chp2": {
+     "abbr": "chp2",
+     "description": "MGB chip warning RH",
+     "trigger": "When the chip is detected by chip detector and not burnt by chip burning module, warning is ON",
+     "discrete": true
+    },
+    "brk": {
+     "abbr": "brk",
+     "description": "Rotor brake warning",
+     "discrete": true
+    },
+    "mw1": {
+     "abbr": "mw1",
+     "description": "Master warning LH",
+     "trigger": "When any of the warnings ON",
+     "discrete": true
+    },
+    "fire1": {
+     "abbr": "fire1",
+     "description": "Engine fire LH",
+     "trigger": "When engine fire-1 lamp is ON, warning is ON",
+     "discrete": true
+    },
+    "fire2": {
+     "abbr": "fire2",
+     "description": "Engine fire RH",
+     "trigger": "When engine fire-2 lamp is ON, warning is ON",
+     "discrete": true
+    },
+    "hyd#1": {
+     "abbr": "hyd#1",
+     "description": "Hydraulic low pressure warning LH",
+     "trigger": "When hyd.pressure -1 < 150 bar , warning is ON",
+     "discrete": true
+    },
+    "hyd#2": {
+     "abbr": "hyd#2",
+     "description": "Hydraulic low pressure warning RH",
+     "trigger": "When hyd.pressure-2 < 150 bar , warning is ON",
+     "discrete": true
+    },
+    "hydlvl#1": {
+     "abbr": "hyd lvl#1",
+     "description": "Hydraulic low level 1",
+     "trigger": "When hydraulic oil level < 1.5 lts , warning is ON",
+     "discrete": true
+    },
+    "hydlvl#2": {
+     "abbr": "hyd lvl#2",
+     "description": "Hydraulic low level 2",
+     "trigger": "When hydraulic oil level < 1.5 lts , warning is ON",
+     "discrete": true
+    },
+    "mgbpr#1": {
+     "abbr": "mgbpr#1",
+     "description": "MGB low oil pressure warning 1",
+     "trigger": "When MGB oil pressure < 3 bars, warning is ON",
+     "discrete": true
+    },
+    "mgbpr#2": {
+     "abbr": "mgbpr#2",
+     "description": "MGB low oil pressure warning 2",
+     "trigger": "When MGB oil pressure < 3 bars, warning is ON",
+     "discrete": true
+    },
+    "gen#1": {
+     "abbr": "gen#1",
+     "description": "DC Generator 1 failure",
+     "trigger": "When starter generator fails, warning is ON",
+     "discrete": true
+    },
+    "gen#2": {
+     "abbr": "gen#2",
+     "description": "DC Generator 2 failure",
+     "trigger": "When starter generator fails, warning is ON",
+     "discrete": true
+    },
+    "lowfl#1": {
+     "abbr": "low fl#1",
+     "description": "Low fuel warning 1",
+     "trigger": "When fuel in supply tank-1 is 57±5 Kgs,warning is ON",
+     "discrete": true
+    },
+    "lowfl#2": {
+     "abbr": "low fl#2",
+     "description": "Low fuel warning 2",
+     "trigger": "When fuel in supply tank-2 is 57±5 Kgs,warning is ON",
+     "discrete": true
+    },
+    "hytemplh": {
+     "abbr": "hytemp lh",
+     "description": "Hydraulic Temperature LH",
+     "trigger": "When hydraulic oil temperature>1010C,warning is ON",
+     "discrete": true
+    },
+    "hytemprh": {
+     "abbr": "hytemp rh",
+     "description": "Hydraulic Temperature RH",
+     "trigger": "When hydraulic oil temperature>1010C,warning is ON",
+     "discrete": true
+    },
+    "agbchp": {
+     "abbr": "agbchp",
+     "description": "AGB Chip",
+     "trigger": "When the chip is detected by chip detector and not burnt by chip burning module, warning is ON.",
+     "discrete": true
+    },
+    "mgbht": {
+     "abbr": "mgbht",
+     "description": "MGB hot",
+     "trigger": "When MGB temperature >105º C , warning is ON",
+     "discrete": true
+    },
+    "tgbhot": {
+     "abbr": "tgbhot",
+     "description": "TGB hot",
+     "trigger": "When MGB temperature >115º C , warning is ON",
+     "discrete": true
+    },
+    "igbhot": {
+     "abbr": "igbhot",
+     "description": "IGB hot",
+     "trigger": "When MGB temperature >115º C , warning is ON",
+     "discrete": true
+    },
+    "wowlh": {
+     "abbr": "wowlh",
+     "description": "WOS LH",
+     "trigger": "When ground/flight position switch is selected to ground, warning is ON",
+     "discrete": true
+    },
+    "wowrh": {
+     "abbr": "wowrh",
+     "description": "WOS RH",
+     "trigger": "When ground/flight position switch is selected to ground, warning is ON",
+     "discrete": true
+    },
+    "accr": {
+     "abbr": "accr",
+     "description": "Accessory Mode",
+     "trigger": "When freewheeldrive is accessory mode,warning is ON",
+     "discrete": true
+    },
+    "trns": {
+     "abbr": "trns",
+     "description": "Transition Mode",
+     "trigger": "When free wheel actuator stroke is in transition/accessory mode, warning is ON",
+     "discrete": true
+    },
+    "acrssel": {
+     "abbr": "acrssel",
+     "description": "Accr mode sel"
+    },
+    "vnewarn": {
+     "abbr": "Vnewarn",
+     "description": "VNE warning (velocity never excced)",
+     "trigger": "When VNE exceeds, warning is ON",
+     "discrete": true
+    },
+    "trvibh": {
+     "abbr": "TrVibH",
+     "description": "TR VIBRATION HIGH",
+     "trigger": "When tail rotor vibration is high, warning is ON",
+     "discrete": true
+    },
+    "trvibex": {
+     "abbr": "TrVibEx",
+     "description": "TR VIBRATION EXCESS",
+     "trigger": "When tail rotor vibration is excess, warning is ON",
+     "discrete": true
+    },
+    "accrsel": {
+     "abbr": "ACCRSEL",
+     "description": "Accessory mode select",
+     "trigger": "When free wheel switch is selected to accessory drive, warning is ON",
+     "discrete": true
+    }
+   }
+  },
+  "gp10": {
+   "title": "AFCS Lane 1 Status",
+   "params": {
+    "afd1": {
+     "abbr": "AF-D1",
+     "description": "Discrepancy between two AFCS computers"
+    },
+    "xahr1": {
+     "abbr": "XAHR1",
+     "description": "Dissimilarity between two AHRS"
+    },
+    "xgyr1": {
+     "abbr": "XGYR1",
+     "description": "Gyro failure"
+    },
+    "csc11": {
+     "abbr": "CSC11",
+     "description": "Collective CSAS actuator faulty"
+    },
+    "csp11": {
+     "abbr": "CSP11",
+     "description": "Pitch CSAS actuator faulty"
+    },
+    "csr11": {
+     "abbr": "CSR11",
+     "description": "Roll CSAS actuator faulty"
+    },
+    "csryw1": {
+     "abbr": "CSRYW1",
+     "description": "Yaw CSAS actuator faulty"
+    },
+    "xhdg1": {
+     "abbr": "XHDG1",
+     "description": "Heading discrepancy between two AHRS"
+    },
+    "xacc#1": {
+     "abbr": "XACC#1",
+     "description": "Discrepancy between acceleration"
+    },
+    "xas#1": {
+     "abbr": "XAS#1",
+     "description": "Discrepancy between airspeed"
+    },
+    "xelp#1": {
+     "abbr": "XELP#1",
+     "description": "Effort law discrepancy of pitch trim actuator"
+    },
+    "xel#1": {
+     "abbr": "XEL#1",
+     "description": "Effort law discrepancy of Roll trim actuator"
+    },
+    "forb#1": {
+     "abbr": "FORB#1",
+     "description": "Engagement of the relevant mode forbidden"
+    },
+    "nogo#1": {
+     "abbr": "NOGO#1",
+     "description": "Auto pilot mode engagement refused"
+    },
+    "ac#1": {
+     "abbr": "AC#1",
+     "description": "loss of one 26 V/440hz"
+    },
+    "gyr#1": {
+     "abbr": "GYR#1",
+     "description": "Vertical Gyro invalidity"
+    },
+    "ahr1#1": {
+     "abbr": "AHR1#1",
+     "description": "AHRS 1 invalidity"
+    },
+    "xalt#1": {
+     "abbr": "XALT#1",
+     "description": "Discrepancy between altitude parameters (Zp 11 & Zp21)"
+    },
+    "adu#1": {
+     "abbr": "ADU#1",
+     "description": "ADU1 of AHRS 1 invalidity"
+    },
+    "hdg#1": {
+     "abbr": "HDG#1",
+     "description": "Heading 1information invalidity"
+    },
+    "hdg1#1": {
+     "abbr": "HDG1#1",
+     "description": "Heading 1information invalidity"
+    },
+    "mag1#1": {
+     "abbr": "MAG1#1",
+     "description": "Magnetometer 1 invalidity"
+    },
+    "ralt#1": {
+     "abbr": "RALT#1",
+     "description": "Radio altimeter invalidity"
+    },
+    "guns#1": {
+     "abbr": "GUNS#1",
+     "description": "Gun sys information invalidity"
+    },
+    "sigh#1": {
+     "abbr": "SIGH#1",
+     "description": "Failure in sight sys"
+    },
+    "nav#1": {
+     "abbr": "NAV#1",
+     "description": "Digital link from navigation sys invalidity"
+    },
+    "strg#1": {
+     "abbr": "STRG#1",
+     "description": "Steering command from navigation sys invalidity"
+    },
+    "rmi#1": {
+     "abbr": "RMI#1",
+     "description": "selected height information invalidity"
+    },
+    "xtmp#1": {
+     "abbr": "XTMP#1",
+     "description": "Discrepancy between pitch trim micro switches"
+    },
+    "xtmr#1": {
+     "abbr": "XTMR#1",
+     "description": "Discrepancy between roll trim micro switches"
+    },
+    "xtmc#1": {
+     "abbr": "XTMC#1",
+     "description": "Discrepancy between collective trim micro switches"
+    },
+    "dopp#1": {
+     "abbr": "DOPP#1",
+     "description": "Doppler"
+    },
+    "engl#1": {
+     "abbr": "ENGL#1",
+     "description": "Engine MCR limit"
+    }
+   }
+  },
+  "gp11": {
+   "title": "AFCS Lane 2 Status",
+   "params": {
+    "afd2": {
+     "abbr": "AF-D2",
+     "description": "Discrepancy between two AFCS computers"
+    },
+    "xahr2": {
+     "abbr": "XAHR2",
+     "description": "Dissimilarity between two AHRS"
+    },
+    "xgyr2": {
+     "abbr": "XGYR2",
+     "description": "Gyro failure"
+    },
+    "csc12": {
+     "abbr": "CSC12",
+     "description": "Collective CSAS actuator faulty"
+    },
+    "csc22": {
+     "abbr": "CSC22",
+     "description": "Collective CSAS actuator faulty"
+    },
+    "csp12": {
+     "abbr": "CSP12",
+     "description": "Pitch CSAS actuator faulty"
+    },
+    "csp22": {
+     "abbr": "CSP22",
+     "description": "Pitch CSAS actuator faulty"
+    },
+    "csr12": {
+     "abbr": "CSR12",
+     "description": "Roll CSAS actuator faulty"
+    },
+    "csr22": {
+     "abbr": "CSR22",
+     "description": "Roll CSAS actuator faulty"
+    },
+    "csryw2": {
+     "abbr": "CSRYW2",
+     "description": "Yaw CSAS actuator faulty"
+    },
+    "xhdg2": {
+     "abbr": "XHDG2",
+     "description": "Heading discrepancy between two AHRS"
+    },
+    "xacc#2": {
+     "abbr": "XACC#2",
+     "description": "Discrepancy between acceleration"
+    },
+    "xas#2": {
+     "abbr": "XAS#2",
+     "description": "Discrepancy between airspeed"
+    },
+    "xelp#2": {
+     "abbr": "XELP#2",
+     "description": "Effort law discrepancy of pitch trim actuator"
+    },
+    "xel#2": {
+     "abbr": "XEL#2",
+     "description": "Effort law discrepancy of Roll trim actuator"
+    },
+    "forb#2": {
+     "abbr": "FORB#2",
+     "description": "Engagement of the relevant mode forbidden"
+    },
+    "nogo#2": {
+     "abbr": "NOGO#2",
+     "description": "Auto pilot mode engagement refused"
+    },
+    "ac#2": {
+     "abbr": "AC#2",
+     "description": "loss of one 26 V/440hz"
+    },
+    "gyr#2": {
+     "abbr": "GYR#2",
+     "description": "Vertical Gyro invalidity"
+    },
+    "ahr1#2": {
+     "abbr": "AHR1#2",
+     "description": "AHRS 1 invalidity"
+    },
+    "ahr2#2": {
+     "abbr": "AHR2#2",
+     "description": "AHRS 1 invalidity"
+    },
+    "xalt#2": {
+     "abbr": "XALT#2",
+     "description": "Discrepancy between altitude parameters (Zp 11 & Zp21)"
+    },
+    "adu#2": {
+     "abbr": "ADU#2",
+     "description": "ADU1 of AHRS 1 invalidity"
+    },
+    "hdg1#1": {
+     "abbr": "HDG1#1",
+     "description": "Heading 1information invalidity"
+    },
+    "hdg2#2": {
+     "abbr": "HDG2#2",
+     "description": "Heading 1information invalidity"
+    },
+    "mag1#2": {
+     "abbr": "MAG1#2",
+     "description": "Magnetometer 1 invalidity"
+    },
+    "mag2#2": {
+     "abbr": "MAG2#2",
+     "description": "Magnetometer 1 invalidity"
+    },
+    "ralt#2": {
+     "abbr": "RALT#2",
+     "description": "Radio altimeter invalidity"
+    },
+    "guns#2": {
+     "abbr": "GUNS#2",
+     "description": "Gun sys information invalidity"
+    },
+    "sigh#2": {
+     "abbr": "SIGH#2",
+     "description": "Failure in sight sys"
+    },
+    "nav#2": {
+     "abbr": "NAV#2",
+     "description": "Digital link from navigation sys invalidity"
+    },
+    "strg#2": {
+     "abbr": "STRG#2",
+     "description": "Steering command from navigation sys invalidity"
+    },
+    "rmi#2": {
+     "abbr": "RMI#2",
+     "description": "selected height information invalidity"
+    },
+    "xtmp#2": {
+     "abbr": "XTMP#2",
+     "description": "Discrepancy between pitch trim micro switches"
+    },
+    "xtmr#2": {
+     "abbr": "XTMR#2",
+     "description": "Discrepancy between roll trim micro switches"
+    },
+    "xtmc#2": {
+     "abbr": "XTMC#2",
+     "description": "Discrepancy between collective trim micro switches"
+    },
+    "dopp#2": {
+     "abbr": "DOPP#2",
+     "description": "Doppler"
+    },
+    "engl#2": {
+     "abbr": "ENGL#2",
+     "description": "Engine MCR limit"
+    }
+   }
+  },
+  "gp14": {
+   "title": "AFCS Lane 1 Engagement",
+   "params": {
+    "bacon1": {
+     "abbr": "BACON1",
+     "description": "AFCS lane-1 engagement/ disengagement status"
+    },
+    "btton1": {
+     "abbr": "BTTON1",
+     "description": "pitch auto trim ON/OFF status"
+    },
+    "btron1": {
+     "abbr": "BTRON1",
+     "description": "roll auto trim ON/OFF status"
+    },
+    "btlon1": {
+     "abbr": "BTLON1",
+     "description": "yaw auto trim ON/OFF status"
+    },
+    "btcon1": {
+     "abbr": "BTCON1",
+     "description": "collective auto trim ON/OFF status"
+    },
+    "bvaseng1": {
+     "abbr": "BVASENG1",
+     "description": "Airspeed hold mode engagement/ disengagement status"
+    },
+    "bvalteng1": {
+     "abbr": "BVALTENG1",
+     "description": "Airspeed hold mode engagement/ disengagement status"
+    },
+    "bvhdgeng1": {
+     "abbr": "BVHDGENG1",
+     "description": "heading hold mode engagement/ disengagement status"
+    },
+    "bvnaveng1": {
+     "abbr": "BVNAVENG1",
+     "description": "navigation hold mode engagement/ disengagement status"
+    },
+    "bvhhteng1": {
+     "abbr": "BVHHTENG1",
+     "description": "Height hold mode engagement/ disengagement status"
+    },
+    "bvturnon1": {
+     "abbr": "BVTURNON1",
+     "description": "Turn co-ordination upper mode engagement/ disengagement status"
+    },
+    "bvtacon1": {
+     "abbr": "BVTACON1",
+     "description": "tactical upper mode engagement/ disengagement status"
+    },
+    "bvgunon1": {
+     "abbr": "BVGUNON1",
+     "description": "Gun upper mode engagement/ disengagement status"
+    },
+    "bvsgteng1": {
+     "abbr": "BVSGTENG1",
+     "description": "Sighting sys upper mode engagement/ disengagement status"
+    },
+    "bdbmc1": {
+     "abbr": "BDBMC1",
+     "description": "Cyclic Stick release status"
+    },
+    "bdbpg1": {
+     "abbr": "BDBPG1",
+     "description": "Collective Stick release status"
+    },
+    "bvtpveng1": {
+     "abbr": "BVTPVENG1",
+     "description": "Pre flight test status"
+    },
+    "bvtmaeng1": {
+     "abbr": "BVTMAENG1",
+     "description": "Maintenance test status"
+    },
+    "bfu1": {
+     "abbr": "BFU1",
+     "description": "Fly up feature"
+    },
+    "demrepr1": {
+     "abbr": "DEMREPR1",
+     "description": "Master warning status"
+    }
+   }
+  },
+  "gp15": {
+   "title": "AFCS Lane 2 Engagement",
+   "params": {
+    "bacon2": {
+     "abbr": "BACON2",
+     "description": "AFCS lane-1 engagement/ disengagement status"
+    },
+    "btton2": {
+     "abbr": "BTTON2",
+     "description": "pitch auto trim ON/OFF status"
+    },
+    "btron2": {
+     "abbr": "BTRON2",
+     "description": "roll auto trim ON/OFF status"
+    },
+    "btlon2": {
+     "abbr": "BTLON2",
+     "description": "yaw auto trim ON/OFF status"
+    },
+    "btcon2": {
+     "abbr": "BTCON2",
+     "description": "collective auto trim ON/OFF status"
+    },
+    "bvaseng2": {
+     "abbr": "BVASENG2",
+     "description": "Airspeed hold mode engagement/ disengagement status"
+    },
+    "bvalteng2": {
+     "abbr": "BVALTENG2",
+     "description": "Airspeed hold mode engagement/ disengagement status"
+    },
+    "bvhdgeng2": {
+     "abbr": "BVHDGENG2",
+     "description": "heading hold mode engagement/ disengagement status"
+    },
+    "bvnaveng2": {
+     "abbr": "BVNAVENG2",
+     "description": "navigation hold mode engagement/ disengagement status"
+    },
+    "bvhhteng2": {
+     "abbr": "BVHHTENG2",
+     "description": "Height hold mode engagement/ disengagement status"
+    },
+    "bvturnon2": {
+     "abbr": "BVTURNON2",
+     "description": "Turn co-ordination upper mode engagement/ disengagement status"
+    },
+    "bvtacon2": {
+     "abbr": "BVTACON2",
+     "description": "tactical upper mode engagement/ disengagement status"
+    },
+    "bvgunon2": {
+     "abbr": "BVGUNON2",
+     "description": "Gun upper mode engagement/ disengagement status"
+    },
+    "bvsgteng2": {
+     "abbr": "BVSGTENG2",
+     "description": "Sighting sys upper mode engagement/ disengagement status"
+    },
+    "bdbmc2": {
+     "abbr": "BDBMC2",
+     "description": "Cyclic Stick release status"
+    },
+    "bdbpg2": {
+     "abbr": "BDBPG2",
+     "description": "Collective Stick release status"
+    },
+    "bvtpveng2": {
+     "abbr": "BVTPVENG2",
+     "description": "Pre flight test status"
+    },
+    "bvtmaeng2": {
+     "abbr": "BVTMAENG2",
+     "description": "Maintenance test status"
+    },
+    "bfu2": {
+     "abbr": "BFU2",
+     "description": "Fly up feature"
+    },
+    "demrepr2": {
+     "abbr": "DEMREPR2",
+     "description": "Master warning status"
+    }
+   }
+  },
+  "gp16": {
+   "title": "Engine Warnings",
+   "params": {
+    "pwrloss": {
+     "abbr": "PWRLOSS",
+     "description": "POWER LOSS OUTPUT 1",
+     "trigger": "When NG-NG2 > 7% or Q1-Q2>45% or NF1-NF2 >5% or\nany corss talk failure or GOV warning, Warning is ON",
+     "discrete": true
+    },
+    "scr1usesh": {
+     "abbr": "SCR1USE_SH",
+     "description": "SCR1 Use (Super Contingency Rating)",
+     "trigger": "Thermal  counter  use  will be logged as SCR use when NG  exceeds 104.8 % or T45 exceeds 1251  DEG K  whichever limit is reached  first.",
+     "discrete": true
+    },
+    "mcr1usesh": {
+     "abbr": "mcr1use_sh",
+     "description": "MCR1 Use  (Maximum Contingency Rating)",
+     "trigger": "Thermal  counter  use  will be logged as MCR use when NG  exceeds 102 % or T45 exceeds 1215 DEG K  whichever limit is reached  first.",
+     "discrete": true
+    },
+    "mcr2usesh": {
+     "abbr": "mcr2use_sh",
+     "description": "MCR2 Use  (Maximum Contingency Rating)",
+     "trigger": "Thermal  counter  use  will be logged as MCR use when NG  exceeds 102 % or T45 exceeds 1215 DEG K  whichever limit is reached  first.",
+     "discrete": true
+    },
+    "gov1sh": {
+     "abbr": "gov1-sh",
+     "description": "Engine LH Governor",
+     "trigger": "When there is a total failure of the fuel mastering unit or channel commutation failure, warning is ON.",
+     "discrete": true
+    },
+    "gov2sh": {
+     "abbr": "gov2_sh",
+     "description": "Engine RH Governor",
+     "trigger": "When there is a total failure of the fuel mastering unit or channel commutation failure, warning is ON.",
+     "discrete": true
+    },
+    "fadec1dgdsh": {
+     "abbr": "fadec1 dgd_sh",
+     "description": "FADEC 1 Degrade",
+     "trigger": "When any of the engine sensors / FADEC malfunctions, warning is ON",
+     "discrete": true
+    },
+    "fadec2dgdsh": {
+     "abbr": "fadec2 dgd_sh",
+     "description": "FADEC 2 Degrade",
+     "trigger": "When any of the engine sensors / FADEC malfunctions, warning is ON",
+     "discrete": true
+    },
+    "eop1sh": {
+     "abbr": "EOP1_sh",
+     "description": "Engine Oil Pressure 1",
+     "trigger": "When low engine oil pressure occurs, warning is ON",
+     "discrete": true
+    },
+    "eop2sh": {
+     "abbr": "EOP2_sh",
+     "description": "Engine Oil Pressure 2",
+     "trigger": "When low engine oil pressure occurs, warning is ON",
+     "discrete": true
+    },
+    "ovsp1sh": {
+     "abbr": "ovsp1-sh",
+     "description": "OVSP-1 (Over Speed Protection)",
+     "trigger": "When NF > 117% +/- 1 % or NG > 108.5 % ± 1 %, warning is ON",
+     "discrete": true
+    },
+    "ovsp2sh": {
+     "abbr": "ovsp2_sh",
+     "description": "OVSP-2 (Over Speed Protection)",
+     "trigger": "When NF > 117% +/- 1 % or NG > 108.5 % ± 1 %, warning is ON",
+     "discrete": true
+    },
+    "ovspmon1sh": {
+     "abbr": "ovspmon1_sh",
+     "description": "OVSP MONITOR 1",
+     "trigger": "When free turbine or gas generator over speed protection system fails, warning is ON",
+     "discrete": true
+    },
+    "ovspmon2sh": {
+     "abbr": "ovspmon2_sh",
+     "description": "OVSP MONITOR 2",
+     "trigger": "When free turbine or gas generator over speed protection system fails, warning is ON",
+     "discrete": true
+    },
+    "scr1selsh": {
+     "abbr": "scr1sel_sh",
+     "description": "SCR1 select (Super Contingency Rating)",
+     "trigger": "When SCR is selected, warning is ON",
+     "discrete": true
+    },
+    "scr2selsh": {
+     "abbr": "scr2sel_sh",
+     "description": "SCR2 select (Super Contingency Rating)",
+     "trigger": "When SCR is selected, warning is ON",
+     "discrete": true
+    },
+    "ffclog1sh": {
+     "abbr": "ffclog1_sh",
+     "description": "Fuel filter clog 1",
+     "trigger": "When high level clogging in engine fuel filter, warning is ON",
+     "discrete": true
+    },
+    "ffclog2sh": {
+     "abbr": "ffclog2_sh",
+     "description": "Fuel filter clog 2",
+     "trigger": "When high level clogging in engine fuel filter, warning is ON",
+     "discrete": true
+    },
+    "pwrloss2": {
+     "abbr": "pwrloss2",
+     "description": "Power loss output 2",
+     "trigger": "When NG1-NG2 >7% or Q1-Q2>45% or NF1-NF2>5% or any cross talk failure or GOV warning, warning is ON",
+     "discrete": true
+    },
+    "oeiqlmt": {
+     "abbr": "oeiqlmt",
+     "description": "OEI Q Limit",
+     "trigger": "When torque > 114%, warning is ON",
+     "discrete": true
+    },
+    "aeoqlmt": {
+     "abbr": "aeoqlmt",
+     "description": "AEO Q Limit",
+     "trigger": "When torque > 91.4%, warning is ON",
+     "discrete": true
+    },
+    "engchp1": {
+     "abbr": "engchp1",
+     "description": "Engine Chip 1",
+     "trigger": "When the chip is detected by chip detector and not burnt by chip burning module, warning is ON.",
+     "discrete": true
+    },
+    "scr2usesh": {
+     "abbr": "SCR2USE_SH",
+     "description": "SCR2 Use  (Super Contingency Rating)",
+     "trigger": "Thermal  counter  use  will be logged as SCR use when NG  exceeds 104.8 % or T45 exceeds 1251  DEG K  whichever limit is reached  first.",
+     "discrete": true
+    },
+    "engchp2": {
+     "abbr": "ENGCHP2",
+     "description": "Engine Chip 2",
+     "trigger": "When the chip is detected by chip detector and not burnt by chip burning module, warning is ON.",
+     "discrete": true
+    }
+   }
+  },
+  "gp12": {
+   "title": "AFCS Lane 1 Engagement",
+   "params": {}
+  }
+ },
+ "glossary": {
+  "FADEC": "Full Authority Digital Electronic Control",
+  "MFT": "Multi Funtion Display",
+  "PFD": "Primary Flight Display",
+  "OHP": "over Head Panel",
+  "MADRAS": "Modular Airborne Data Recording & Acdquisition System",
+  "ULB": "Under water Locator Beacon",
+  "CVDR": "Cockpit Voice & Data Recorder",
+  "DIU": "Data Interface Unit",
+  "BIT": "Built In Test",
+  "RTB": "Rotor Track & Balance",
+  "MSPU": "Modern Signal Processing Unit",
+  "CCH": "Cockpit Control Head",
+  "MGB": "Main Gear Box",
+  "ADU": "Air Data Unit",
+  "ADUs": "Air Data units",
+  "AFCCs": "Automatic Flight Control Computers",
+  "AGB": "Auxiliary Gear Box",
+  "ARIS": "Anti Resonance Isolation System",
+  "AVCS": "Active Vibration Control System",
+  "CB": "Circuit Breaker",
+  "CDS": "Control and Display System",
+  "CDUs": "Control and Display Units",
+  "CW": "Clockwise",
+  "CWP": "Centralized Warning Panel",
+  "DIUs": "Data Interface Units",
+  "DMC": "Display and Mission Computer",
+  "DMCs": "Display Mission computers",
+  "DVS": "Doppler velocity sensor",
+  "EEW": "Equipped Empty Weight",
+  "EGPWS": "Enhanced Ground Proximity Warning System",
+  "EPR": "External Power Receptacle",
+  "EPU": "External Power Unit",
+  "FTP": "Functional Test Procedure",
+  "HAL": "Hindustan Aeronautics Limited",
+  "IADS": "Integrated Architecture Display System",
+  "IDS": "Integrated Dynamic System",
+  "IGB": "Intermediate Gear Box",
+  "IRSS": "INFRARED SIGNATURE SUPPRESSION",
+  "ISIS": "Integrated Standby Instrument System",
+  "ISPS": "Integrated Self Protection Suite",
+  "ISU": "Integrated Sensor Unit",
+  "ISUs": "Integrated Sensor Units",
+  "LFS": "Last Flight Servicing",
+  "LH": "Left Hand",
+  "MFD": "Multi Function Display",
+  "MFDs": "Multi Function Displays",
+  "MFDS": "Main Flexible Drive Shaft",
+  "MW": "Master Warning",
+  "NATO": "North Atlantic Treaty Organization",
+  "OBIGGS": "ON BOARD INERT GAS GENERATING SYSTEM",
+  "PBIT": "Power On Built In Test",
+  "PCU": "Pilot Control Unit",
+  "Pf": "Forward Power",
+  "PIC": "Pre-Insulation Checks",
+  "Pr": "Reverse Power",
+  "RH": "Right Hand",
+  "SEI": "Standby Engine Instrument",
+  "SOAP": "Spectrographic Oil Analysis Program",
+  "SOV": "Shut Off Valve",
+  "SP": "System Pressure",
+  "SR": "System Return",
+  "TGB": "Tail Gear Box",
+  "TRS": "Turn Round Servicing",
+  "VG": "Vertical Gyro",
+  "VMS": "Vibration Monitoring System",
+  "WB": "Weighing Beam",
+  "ALH": "Advanced Light Helicopter",
+  "ALT": "Altitude",
+  "CU": "Control Unit",
+  "CVFDR": "Cockpit Voice and Flight Data Recorder",
+  "DC": "Direct Current",
+  "DRU": "Data Recordind Unit",
+  "GUI": "Graphical User Interface",
+  "ICS": "Inter Communication System",
+  "LRU": "Line Replaceble Unit",
+  "LED": "Light Emitting Diode",
+  "OH": "Over Head",
+  "OEM": "Original Equipment Manufacturer",
+  "RIPS": "Recorder Independent Power Supply",
+  "REC": "Recording",
+  "OAT": "OUTSIDE AIR TEMPERATURE",
+  "AHRS": "ALTITUDE HEADING REFERENCE SYSTEM"
+ }
+}
