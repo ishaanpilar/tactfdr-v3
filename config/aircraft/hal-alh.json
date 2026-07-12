@@ -1,4 +1,13 @@
 {
+ "meta": {
+  "id": "hal-alh",
+  "name": "HAL ALH",
+  "fullName": "HAL Advanced Light Helicopter (Dhruv)",
+  "manufacturer": "Hindustan Aeronautics Limited",
+  "engines": 2,
+  "tailPattern": "^IA-?\\d{3,4}",
+  "notes": "Dictionary extracted from client reference workbooks (kannada_Group_Abbreviations.xlsx, kannada full form.xlsx)."
+ },
  "groups": {
   "gp1": {
    "title": "Parameter Extreme Limits",

@@ -20,7 +20,18 @@ from pathlib import Path
 import openpyxl
 
 REF_DIR = Path(sys.argv[1] if len(sys.argv) > 1 else "../Reference Files")
-OUT = Path(__file__).resolve().parent.parent / "config" / "fdr-dictionary.json"
+OUT = Path(__file__).resolve().parent.parent / "config" / "aircraft" / "hal-alh.json"
+
+AIRCRAFT_META = {
+    "id": "hal-alh",
+    "name": "HAL ALH",
+    "fullName": "HAL Advanced Light Helicopter (Dhruv)",
+    "manufacturer": "Hindustan Aeronautics Limited",
+    "engines": 2,
+    "tailPattern": r"^IA-?\d{3,4}",
+    "notes": "Dictionary extracted from client reference workbooks "
+             "(kannada_Group_Abbreviations.xlsx, kannada full form.xlsx).",
+}
 
 TIME_COLS = {"time", "dd", "mm", "yy", "hh", "min", "sec"}
 
@@ -151,11 +162,13 @@ def extract():
 
 if __name__ == "__main__":
     data = extract()
-    OUT.parent.mkdir(exist_ok=True)
+    data = {"meta": AIRCRAFT_META, "groups": data["groups"], "glossary": data["glossary"]}
+    OUT.parent.mkdir(parents=True, exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=1)
     nparams = sum(len(g["params"]) for g in data["groups"].values())
     nlimits = sum(1 for g in data["groups"].values() for p in g["params"].values()
                   if p.get("min") is not None or p.get("max") is not None)
-    print(f"Wrote {OUT.name}: {len(data['groups'])} groups, {nparams} params, "
+    print(f"Wrote {OUT} ({AIRCRAFT_META['name']}): {len(data['groups'])} groups, {nparams} params, "
           f"{nlimits} with numeric limits, {len(data['glossary'])} glossary entries")
+    print("Remember to list new aircraft profiles in config/aircraft/index.json")

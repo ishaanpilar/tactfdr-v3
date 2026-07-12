@@ -1,0 +1,5 @@
+{
+  "profiles": [
+    { "id": "hal-alh", "name": "HAL ALH", "file": "hal-alh.json" }
+  ]
+}

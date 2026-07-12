@@ -4,6 +4,7 @@
    all timing lives in the single playback clock. */
 
 import { parseWorkbooks, fromTrackArray } from './data/excel-parser.js';
+import { loadManifest, loadProfile, extractTailNumber } from './data/aircraft.js';
 import { buildModel } from './data/flight-model.js';
 import { parseLimitsWorkbook } from './data/limits.js';
 import { createPlayback } from './engine/playback.js';
@@ -21,13 +22,41 @@ const $ = (sel) => document.querySelector(sel);
 let model = null, playback = null, chart = null, mapView = null, eventLog = null, report = null, cvr = null;
 let currentEvents = [];
 
-/* aircraft dictionary (parameter descriptions, limits, warning triggers) —
-   extracted from the client reference workbooks by tools/extract_dictionaries.py */
+/* Active aircraft profile (parameter descriptions, limits, warning
+   triggers) — see modules/data/aircraft.js. Selectable once more than one
+   profile exists; defaults to the manifest's first entry (HAL ALH). */
 let DICT = null;
-const dictReady = fetch('config/fdr-dictionary.json')
-  .then(r => r.ok ? r.json() : null)
-  .then(d => { DICT = d; })
-  .catch(() => { console.warn('fdr-dictionary.json not found — running with generic labels + placeholder limits'); });
+let ACTIVE_AIRCRAFT_ID = 'hal-alh';
+const dictReady = (async () => {
+  try {
+    const m = await loadManifest();
+    ACTIVE_AIRCRAFT_ID = (m.profiles[0] && m.profiles[0].id) || ACTIVE_AIRCRAFT_ID;
+    DICT = await loadProfile(ACTIVE_AIRCRAFT_ID);
+    buildAircraftSelector(m);
+  } catch {
+    console.warn('aircraft profile unavailable — running with generic labels + placeholder limits');
+  }
+})();
+
+function buildAircraftSelector(manifest) {
+  const sel = $('#aircraft-select');
+  if (!sel) return;
+  sel.innerHTML = manifest.profiles.map(p =>
+    `<option value="${p.id}" ${p.id === ACTIVE_AIRCRAFT_ID ? 'selected' : ''}>${p.name}</option>`).join('');
+  sel.disabled = manifest.profiles.length < 2; // one profile today — ready for more
+  sel.addEventListener('change', async () => {
+    ACTIVE_AIRCRAFT_ID = sel.value;
+    DICT = await loadProfile(ACTIVE_AIRCRAFT_ID);
+    updateAircraftBadge();
+    if (model) { setStatus('Aircraft profile changed — reload the flight file(s) to apply new limits/labels.', 'busy'); }
+  });
+  updateAircraftBadge();
+}
+
+function updateAircraftBadge() {
+  const badge = $('#tb-aircraft-name');
+  if (badge && DICT && DICT.meta) badge.textContent = DICT.meta.name;
+}
 
 /* ---------------- upload flow ---------------- */
 const overlay = $('#upload-overlay');
@@ -122,6 +151,8 @@ function loadFlight(parsed) {
   $('#tb-date').textContent = model.metadata.date || '—';
   $('#tb-duration').textContent = model.metadata.duration;
   $('#tb-records').textContent = model.metadata.records.toLocaleString();
+  const tail = extractTailNumber(model.metadata.source, DICT);
+  $('#tb-tail').textContent = tail || '—';
 
   // views
   chart = createChartView($('#chart-host'), model, playback, () => currentEvents,

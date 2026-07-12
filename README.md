@@ -1,9 +1,24 @@
-# TACT-FDR v3 — Flight Data Analysis Suite
+# HAL ALH — TACT-FDR v3 — Flight Data Analysis Suite
 
-Unified FDR analysis & briefing tool. Merges the FDR-Visualization (Plotly graphs)
-and TactFDR (Leaflet map replay) prototypes into one offline-first app, restyled
-in the ACCS design language (`../design-handover/`). See `../BUILD_PLAN.md` for
-the full roadmap — this is the **Phase 1** build.
+Unified FDR analysis & briefing tool, currently built and validated for the
+**HAL ALH (Advanced Light Helicopter / Dhruv)**. Merges the FDR-Visualization
+(Plotly graphs) and TactFDR (Leaflet map replay) prototypes into one
+offline-first app, restyled in the ACCS design language (`../design-handover/`).
+See `../BUILD_PLAN.md` for the full roadmap and `../REFERENCE_DATA.md` for the
+real FDR export format this engine parses.
+
+## Aircraft profiles
+
+The parser, limits engine, and event labels are all driven by an **aircraft
+profile** — a JSON dictionary of parameters, extreme limits, and warning
+trigger text (`config/aircraft/hal-alh.json`), generated from the client's
+reference workbooks by `tools/extract_dictionaries.py`. Only one profile
+exists today (HAL ALH, shown in the topbar), but the app is built to hold
+more: list a new profile in `config/aircraft/index.json` and the topbar
+selector activates automatically — no code change needed for a second
+airframe's dictionary. The topbar's **Tail No.** field is extracted live
+from each loaded file's own recorder metadata (e.g. `IA-3101_...` → `IA-3101`),
+never hardcoded.
 
 ## Run
 

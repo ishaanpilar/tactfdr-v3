@@ -9,6 +9,7 @@
 .tb-wordmark{font-family:var(--cond);font-weight:600;font-size:var(--fs-2xl);letter-spacing:var(--ls-brand);color:var(--txt);text-transform:uppercase;text-shadow:0 0 18px rgba(56,214,255,.25)}
 .tb-wordmark .accent{color:var(--intel)}
 .tb-sub{font-family:var(--cond);font-size:var(--fs-xs);letter-spacing:var(--ls-2);color:var(--txt-3);text-transform:uppercase}
+.accent-val{font-family:var(--semicond);font-size:var(--fs-lg);font-weight:700;color:var(--nominal);letter-spacing:.5px;text-shadow:0 0 10px rgba(70,224,138,.3)}
 
 /* ---------- main workspace ---------- */
 .workspace{flex:1;min-height:0;display:flex;gap:var(--gap);padding:var(--gap) 14px;position:relative;z-index:1}

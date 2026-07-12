@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TACT-FDR // Flight Data Analysis Suite</title>
+  <title>HAL ALH — TACT-FDR // Flight Data Analysis Suite</title>
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="styles/fonts.css">
   <link rel="stylesheet" href="styles/tokens.css">
@@ -41,6 +41,18 @@
           <div class="tb-wordmark">TACT<span class="accent">FDR</span></div>
           <div class="tb-sub">Flight Data Analysis Suite</div>
         </div>
+      </div>
+      <div class="tb-seg">
+        <div class="tb-col">
+          <span class="tb-label">Aircraft</span>
+          <span class="tb-val" style="display:flex;align-items:center;gap:6px">
+            <span id="tb-aircraft-name" class="accent-val">HAL ALH</span>
+            <select id="aircraft-select" class="ctl" style="height:20px;font-size:9px;padding:1px 4px;min-width:0" title="Aircraft profile — more profiles selectable once added"></select>
+          </span>
+        </div>
+      </div>
+      <div class="tb-seg">
+        <div class="tb-col"><span class="tb-label">Tail No.</span><span class="tb-val mono" id="tb-tail" style="color:var(--intel)">—</span></div>
       </div>
       <div class="tb-seg">
         <div class="tb-col"><span class="tb-label">File</span><span class="tb-val mono" id="tb-file" style="font-size:12px">—</span></div>
