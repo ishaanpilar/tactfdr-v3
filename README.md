@@ -61,6 +61,25 @@ opens straight to map replay.
   metadata header, chart snapshot, limit exceedance summary, full sequence of
   events. "Print / Save PDF" uses the browser print engine — no PDF library.
 
+## What's in Phase 3
+
+- **CVR panel** ([modules/views/cvr.js](modules/views/cvr.js)) — cockpit audio
+  locked to the master playback clock: rate-matched up to 4×, muted beyond
+  (transcript carries the channel), drift-corrected on every tick. Waveform +
+  duration decode via `OfflineAudioContext`, so the panel works even with no
+  audio output device.
+- **FDR alignment offset** — the recorders share no time reference; the offset
+  control (±0.1 s / ±1 s nudges) lets the analyst align the CVR against known
+  cues (rotor start, radio calls).
+- **Transcript layer** — import SRT / WebVTT / JSON; searchable, click-to-seek,
+  live segment highlight during replay.
+- **Offline transcription** ([tools/transcribe.py](tools/transcribe.py)) —
+  faster-whisper on the analyst's machine (no cloud), `large-v3` for
+  Hindi + English code-switched CVR audio, VAD-filtered for noisy recordings.
+  Emits SRT + JSON that import straight into the CVR panel.
+- **Demo assets** — a clearly-labelled *synthetic* CVR wav + transcript
+  auto-load with `?demo` so the sync pipeline is demonstrable end-to-end.
+
 ## Structure
 
 ```text
