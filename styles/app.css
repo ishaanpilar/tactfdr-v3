@@ -142,6 +142,7 @@ input.ctl-num:hover{border-color:var(--intel-50)}
 #cvr-cursor{position:absolute;top:0;bottom:0;width:1px;background:var(--intel);box-shadow:var(--glow-intel);pointer-events:none;left:0}
 .cvr-ctl-row{display:flex;align-items:center;gap:5px}
 .cvr-lbl{font-family:var(--cond);font-size:var(--fs-2xs);letter-spacing:var(--ls-label);color:var(--txt-3);text-transform:uppercase;font-weight:600}
+#cvr-gate{font-family:var(--cond);font-size:var(--fs-2xs);letter-spacing:var(--ls-label);color:var(--caution);text-transform:uppercase;font-weight:600;margin-left:8px}
 .cvr-nudge{width:26px;height:24px;font-family:var(--mono);font-size:9px}
 #btn-cvr-mute{width:26px;height:24px}
 #btn-cvr-mute svg{width:12px;height:12px}

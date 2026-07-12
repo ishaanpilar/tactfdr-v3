@@ -28,6 +28,7 @@ export function createCVR(root, model, playback) {
     cursor: root.querySelector('#cvr-cursor'),
     offset: root.querySelector('#cvr-offset'),
     audioTime: root.querySelector('#cvr-time'),
+    gate: root.querySelector('#cvr-gate'),
     list: root.querySelector('#cvr-transcript'),
     search: root.querySelector('#cvr-search'),
     mute: root.querySelector('#btn-cvr-mute')
@@ -103,6 +104,17 @@ export function createCVR(root, model, playback) {
     el.status.textContent = `${filename} · ${fmtT(duration)}`;
     el.status.classList.add('g');
     el.body.style.display = '';
+    audio.volume = 1;
+
+    // audio is muted above 4× (unintelligible) — landing on a fresh file at
+    // the transport's default 5× would play silence with no explanation, so
+    // drop to 1× and let the analyst speed back up deliberately
+    if (playback.speed > 4) {
+      playback.setSpeed(1);
+      const sel = document.getElementById('speed-select');
+      if (sel) sel.value = '1';
+    }
+
     drawWave();
     syncTick(playback.pos, playback.playing);
   }
@@ -135,6 +147,14 @@ export function createCVR(root, model, playback) {
     const inRange = at >= 0 && at < duration;
     const speed = playback.speed;
     const canPlay = playing && inRange && speed <= 4 && !muted;
+
+    // say WHY there's no sound instead of leaving a silent mystery
+    if (el.gate) {
+      el.gate.textContent =
+        muted ? 'MUTED' :
+        speed > 4 ? `AUDIO OFF AT ${speed}× — SET RATE ≤ 4×` :
+        !inRange ? 'OUTSIDE RECORDING' : '';
+    }
 
     if (canPlay) {
       audio.playbackRate = speed;
